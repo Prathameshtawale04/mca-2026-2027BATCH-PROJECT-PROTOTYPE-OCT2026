@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Online Examination</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/exam.css') }}">
+
+</head>
+
+<body data-student-id="{{ session['student_id'] }}">
+
+<header>
+
+    <h2>Online Examination System</h2>
+
+    <div id="timer">
+
+        Time Left :
+        <span id="time">30:00</span>
+
+    </div>
+
+    <button id="voiceStartButton" type="button" aria-pressed="false" onclick="toggleVoiceCommands()">Voice commands: Off</button>
+
+</header>
+
+<div class="container">
+
+    <div class="top">
+
+        <h3>
+
+            Welcome,
+            {{ session['student_name'] }}
+
+        </h3>
+
+        <p id="progress">
+
+            Question
+            <span id="currentQuestion">1</span>
+            of
+            {{ questions|length }}
+
+        </p>
+
+    </div>
+
+    <div class="camera-container">
+
+    <h3>Live Monitoring</h3>
+
+    <div class="video-stage">
+        <video id="video" autoplay muted playsinline></video>
+        <canvas id="overlay" aria-hidden="true"></canvas>
+    </div>
+
+    <canvas
+        id="canvas"
+        style="display:none;">
+    </canvas>
+
+    <p id="cameraStatus">
+
+        Camera Starting...
+
+    </p>
+
+    </div>
+
+    <div class="warning-box">
+
+    <h3>Exam Monitoring</h3>
+
+    <p id="monitorStatus">
+
+        Monitoring Started...
+
+    </p>
+
+    </div>
+    <form
+        id="examForm"
+        action="/submit"
+        method="POST">
+
+        {% for q in questions %}
+
+        <div
+            class="question-box"
+            id="question{{ loop.index0 }}">
+
+            <h2>
+
+                Question {{ loop.index }}
+
+            </h2>
+
+            <p class="question-text">
+
+                {{ q.question }}
+
+            </p>
+
+            <label>
+
+                <input
+                    type="radio"
+                    name="q{{ q.question_id }}"
+                    value="A">
+
+                {{ q.option_a }}
+
+            </label>
+
+            <label>
+
+                <input
+                    type="radio"
+                    name="q{{ q.question_id }}"
+                    value="B">
+
+                {{ q.option_b }}
+
+            </label>
+
+            <label>
+
+                <input
+                    type="radio"
+                    name="q{{ q.question_id }}"
+                    value="C">
+
+                {{ q.option_c }}
+
+            </label>
+
+            <label>
+
+                <input
+                    type="radio"
+                    name="q{{ q.question_id }}"
+                    value="D">
+
+                {{ q.option_d }}
+
+            </label>
+
+        </div>
+
+        {% endfor %}
+
+    </form>
+
+    <nav class="exam-controls" aria-label="Exam controls">
+        <button type="button" onclick="previousQuestion()">Previous question</button>
+        <button type="button" onclick="readCurrentQuestion()">Read question</button>
+        <button type="button" onclick="readOptions()">Read options</button>
+        <button type="button" onclick="lockAnswer()">Lock answer</button>
+        <button type="button" onclick="nextQuestion()">Next question</button>
+        <button type="button" class="submit-button" onclick="askSubmitConfirmation()">Submit exam</button>
+    </nav>
+
+    <div class="status">
+
+        <h3>
+
+            Voice Assistant
+
+        </h3>
+
+        <p id="voiceStatus">
+
+            Waiting for command...
+
+        </p>
+
+    </div>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/exam.js') }}?v=voice-20261014-2"></script>
+
+<script src="{{ url_for('static', filename='js/voice_assistant.js') }}?v=voice-20261015-3"></script>
+
+<script src="{{ url_for('static', filename='js/exam_timer.js') }}"></script>
+
+<script src="{{ url_for('static',
+filename='js/camera.js') }}"></script>
+
+<script>
+
+const studentName="{{ session['student_name'] }}";
+
+
+window.onload = function(){
+
+    initializeExam();
+
+    initializeExamTimer();
+
+    updateVoiceToggle();
+
+    startVoice();
+
+    startCamera();
+    setTimeout(readCurrentQuestion, 1000);
+
+};
+</script>
+<script src="{{ url_for('static', filename='js/live_verification.js') }}"></script>
+</body>
+
+</html>

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}403 Forbidden{% endblock %}
+{% block breadcrumb %}Access Denied{% endblock %}
+{% block content %}
+<div class="text-center py-5">
+    <div class="d-inline-flex p-3 rounded-circle mb-3 bg-danger bg-opacity-10 text-danger border border-danger-subtle">
+        <i class="fas fa-ban fs-1"></i>
+    </div>
+    <h2 class="fw-bold text-white mb-2">403 &bull; Access Forbidden</h2>
+    <p class="text-secondary max-w-500 mx-auto mb-4">You do not have the required role or permissions to access this administrative resource.</p>
+    <a href="{{ url_for('main.dashboard') }}" class="btn btn-primary"><i class="fas fa-arrow-left me-1"></i> Return to Dashboard</a>
+</div>
+{% endblock %}

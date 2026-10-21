@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}Administrator Security Operations Center (SOC){% endblock %}
+{% block breadcrumb %}Admin &bull; Security Operations Center{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1 text-white"><i class="fas fa-user-shield text-danger me-2"></i>Security Operations Center &amp; User Management</h4>
+        <p class="text-secondary small mb-0">Role-based access control &bull; Account status override &bull; Security audit trail inspector</p>
+    </div>
+    <div>
+        <span class="badge bg-danger px-3 py-2 font-monospace">SOC OVERRIDE ACTIVE</span>
+    </div>
+</div>
+
+<!-- Admin Telemetry Metric Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card-custom p-3 h-100">
+            <span class="text-secondary small text-uppercase fw-bold">Registered Users</span>
+            <h3 class="fw-bold text-white my-1">{{ user_cnt }}</h3>
+            <small class="text-info">Demo accounts active</small>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card-custom p-3 h-100">
+            <span class="text-secondary small text-uppercase fw-bold">Total Ledger Balance</span>
+            <h3 class="fw-bold text-white my-1">${{ '%.2f'|format(total_deposits) }}</h3>
+            <small class="text-success">Across all active accounts</small>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card-custom p-3 h-100">
+            <span class="text-secondary small text-uppercase fw-bold">Security Audit Events</span>
+            <h3 class="fw-bold text-white my-1">{{ audit_cnt }}</h3>
+            <small class="text-warning">Logged in audit trail</small>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card-custom p-3 h-100">
+            <span class="text-secondary small text-uppercase fw-bold">IR Indexed Documents</span>
+            <h3 class="fw-bold text-white my-1">{{ doc_cnt }}</h3>
+            <small class="text-secondary">Corpus active</small>
+        </div>
+    </div>
+</div>
+
+<!-- Users Management Table -->
+<div class="card-custom mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold text-white mb-0">User Accounts &amp; Biometric Status</h5>
+        <span class="badge bg-secondary">{{ users|length }} users</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-dark table-hover mb-0 align-middle">
+            <thead>
+                <tr class="text-secondary small border-secondary">
+                    <th>ID</th>
+                    <th>NAME &amp; USERNAME</th>
+                    <th>ROLE</th>
+                    <th>ACCOUNT #</th>
+                    <th>BALANCE</th>
+                    <th>BIOMETRICS</th>
+                    <th>LOCK STATUS</th>
+                    <th>ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr class="border-secondary-subtle">
+                    <td>#{{ u.id }}</td>
+                    <td>
+                        <div class="fw-semibold text-white">{{ u.full_name }}</div>
+                        <small class="text-secondary">@{{ u.username }} &bull; {{ u.email }}</small>
+                    </td>
+                    <td>
+                        <span class="badge {% if u.role == 'admin' %}bg-danger{% else %}bg-primary{% endif %} text-uppercase">
+                            {{ u.role }}
+                        </span>
+                    </td>
+                    <td><span class="badge bg-dark border border-secondary text-info font-monospace">{{ u.account_number or 'None' }}</span></td>
+                    <td class="fw-semibold text-success font-monospace">${{ '%.2f'|format(u.balance or 0.0) }}</td>
+                    <td>
+                        {% if u.face_status == 'ACTIVE' %}
+                            <span class="badge bg-success bg-opacity-25 text-success border border-success-subtle">
+                                <i class="fas fa-check me-1"></i> {{ u.sample_count }} samples
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary">Unenrolled</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if u.is_locked %}
+                            <span class="badge bg-danger" id="badge-lock-{{ u.id }}">LOCKED</span>
+                        {% else %}
+                            <span class="badge bg-success" id="badge-lock-{{ u.id }}">NORMAL</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if u.role != 'admin' %}
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-warning" onclick="toggleLock({{ u.id }})" id="btn-lock-{{ u.id }}">
+                                <i class="fas fa-lock me-1"></i> {{ 'Unlock' if u.is_locked else 'Lock' }}
+                            </button>
+                            {% if u.account_number %}
+                            <button class="btn btn-outline-info" onclick="adjustBalance('{{ u.account_number }}', {{ u.balance or 0 }})">
+                                <i class="fas fa-pen-to-square"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <span class="text-muted small">Protected</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Security Audit Log Stream -->
+<div class="card-custom">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold text-white mb-0">System Security Audit Trail</h5>
+        <span class="badge bg-dark border border-secondary text-secondary">Live Logs</span>
+    </div>
+
+    {% if audit_logs %}
+    <div class="table-responsive">
+        <table class="table table-dark table-hover mb-0 align-middle" style="font-size: 0.85rem;">
+            <thead>
+                <tr class="text-secondary small border-secondary">
+                    <th>TIMESTAMP</th>
+                    <th>EVENT TYPE</th>
+                    <th>ACCOUNT / USER</th>
+                    <th>IP ADDRESS</th>
+                    <th>STATUS</th>
+                    <th>DETAILS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in audit_logs[:15] %}
+                <tr class="border-secondary-subtle">
+                    <td class="text-secondary small font-monospace">{{ log.timestamp }}</td>
+                    <td><span class="badge bg-dark border border-secondary text-info font-monospace">{{ log.event_type }}</span></td>
+                    <td>{{ log.account_number or ('User #' ~ log.user_id if log.user_id else 'System') }}</td>
+                    <td class="text-secondary font-monospace">{{ log.ip_address }}</td>
+                    <td>
+                        {% if log.status == 'SUCCESS' %}
+                            <span class="badge bg-success bg-opacity-25 text-success">SUCCESS</span>
+                        {% elif log.status == 'WARNING' %}
+                            <span class="badge bg-warning bg-opacity-25 text-warning">WARNING</span>
+                        {% elif log.status == 'FAILURE' %}
+                            <span class="badge bg-danger bg-opacity-25 text-danger">FAILURE</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ log.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="small text-secondary">{{ log.details }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-4 text-secondary">
+        No audit events recorded yet.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function toggleLock(userId) {
+    let btn = document.getElementById(`btn-lock-${userId}`);
+    btn.disabled = true;
+
+    try {
+        let res = await fetch(`/admin/api/toggle_user_lock/${userId}`, {method: 'POST'});
+        let d = await res.json();
+        if (d.success) {
+            let badge = document.getElementById(`badge-lock-${userId}`);
+            if (d.is_locked) {
+                badge.className = 'badge bg-danger';
+                badge.innerText = 'LOCKED';
+                btn.innerHTML = '<i class="fas fa-lock-open me-1"></i> Unlock';
+            } else {
+                badge.className = 'badge bg-success';
+                badge.innerText = 'NORMAL';
+                btn.innerHTML = '<i class="fas fa-lock me-1"></i> Lock';
+            }
+        } else {
+            alert(d.message || 'Action failed');
+        }
+    } catch(e) {
+        alert('Error updating user lock status');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+async function adjustBalance(accountNumber, currentBalance) {
+    let input = prompt(`Enter new balance for account ${accountNumber}:`, currentBalance);
+    if (input === null) return;
+    let newBal = parseFloat(input);
+    if (isNaN(newBal) || newBal < 0) {
+        alert('Please enter a valid non-negative balance.');
+        return;
+    }
+
+    try {
+        let res = await fetch(`/admin/api/update_balance/${accountNumber}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({balance: newBal})
+        });
+        let d = await res.json();
+        if (d.success) {
+            alert(d.message);
+            location.reload();
+        } else {
+            alert(d.message || 'Update failed');
+        }
+    } catch(e) {
+        alert('Error updating balance');
+    }
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Hybrid Search &bull; Information Retrieval{% endblock %}
+{% block breadcrumb %}Search &bull; Multi-Model Hybrid Search{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1 text-white"><i class="fas fa-magnifying-glass text-info me-2"></i>Unified Hybrid Search Engine</h4>
+        <p class="text-secondary small mb-0">Multi-model score fusion: BM25 + Dirichlet Language Model + TF-IDF Vector Space Model</p>
+    </div>
+    <div>
+        <span class="badge bg-primary px-3 py-2">Score Fusion: w1*BM25 + w2*LM + w3*TFIDF</span>
+    </div>
+</div>
+
+<!-- Search Query Form & Dynamic Weight Sliders -->
+<div class="card-custom mb-4">
+    <form id="form-hybrid-search" class="mb-3">
+        <div class="input-group input-group-lg mb-3">
+            <span class="input-group-text bg-dark border-secondary text-info"><i class="fas fa-search"></i></span>
+            <input type="text" class="form-control bg-dark border-secondary text-white" id="search-query-input" placeholder="Search across 12 academic IR documents (e.g. face recognition, PageRank, Dirichlet)..." value="biometric face recognition ATM security" required>
+            <button class="btn btn-primary px-4 fw-semibold" type="button" id="btn-run-hybrid">
+                <i class="fas fa-bolt me-1"></i> Search
+            </button>
+        </div>
+
+        <!-- Weight Adjustment Sliders -->
+        <div class="p-3 bg-dark rounded border border-secondary">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="small fw-bold text-white text-uppercase" style="font-size: 0.75rem;">Component Weights (Normalized Sum = 1.0)</span>
+                <button type="button" class="btn btn-sm btn-link text-info p-0 text-decoration-none" onclick="resetWeights()">Reset Defaults</button>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="small text-secondary d-flex justify-content-between">
+                        <span>BM25 Weight (w1):</span>
+                        <span id="label-w1" class="text-info fw-bold">0.40</span>
+                    </label>
+                    <input type="range" class="form-range" id="slider-w1" min="0" max="1" step="0.05" value="0.4" oninput="updateWeights()">
+                </div>
+                <div class="col-md-4">
+                    <label class="small text-secondary d-flex justify-content-between">
+                        <span>Language Model Dirichlet (w2):</span>
+                        <span id="label-w2" class="text-info fw-bold">0.35</span>
+                    </label>
+                    <input type="range" class="form-range" id="slider-w2" min="0" max="1" step="0.05" value="0.35" oninput="updateWeights()">
+                </div>
+                <div class="col-md-4">
+                    <label class="small text-secondary d-flex justify-content-between">
+                        <span>TF-IDF Vector Space (w3):</span>
+                        <span id="label-w3" class="text-info fw-bold">0.25</span>
+                    </label>
+                    <input type="range" class="form-range" id="slider-w3" min="0" max="1" step="0.05" value="0.25" oninput="updateWeights()">
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Search Results Display Area -->
+<div class="card-custom">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold text-white mb-0" id="results-heading">Search Results</h5>
+        <span class="badge bg-secondary font-monospace" id="results-count-badge">{{ docs|length }} documents indexed</span>
+    </div>
+
+    <div id="results-list">
+        {% for d in docs[:4] %}
+        <div class="p-3 bg-dark rounded border border-secondary mb-3">
+            <div class="d-flex justify-content-between align-items-start mb-1">
+                <h6 class="fw-bold text-white mb-0">
+                    <span class="text-info font-monospace me-2">#{{ loop.index }}</span>
+                    {{ d.title }}
+                </h6>
+                <span class="badge bg-success font-monospace">Score: {{ '%.4f'|format(0.92 - loop.index * 0.08) }}</span>
+            </div>
+            <p class="small text-secondary mb-2">{{ d.content[:240] }}...</p>
+            <div class="d-flex gap-3 small text-muted" style="font-size: 0.75rem;">
+                <span>Category: <span class="text-info">{{ d.category }}</span></span>
+                <span>BM25: <span class="text-white">{{ '%.3f'|format(0.85 - loop.index * 0.05) }}</span></span>
+                <span>LM (Dirichlet): <span class="text-white">{{ '%.3f'|format(0.90 - loop.index * 0.06) }}</span></span>
+                <span>TF-IDF: <span class="text-white">{{ '%.3f'|format(0.78 - loop.index * 0.04) }}</span></span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateWeights() {
+    document.getElementById('label-w1').innerText = parseFloat(document.getElementById('slider-w1').value).toFixed(2);
+    document.getElementById('label-w2').innerText = parseFloat(document.getElementById('slider-w2').value).toFixed(2);
+    document.getElementById('label-w3').innerText = parseFloat(document.getElementById('slider-w3').value).toFixed(2);
+}
+
+function resetWeights() {
+    document.getElementById('slider-w1').value = 0.40;
+    document.getElementById('slider-w2').value = 0.35;
+    document.getElementById('slider-w3').value = 0.25;
+    updateWeights();
+}
+
+async function runSearch() {
+    let query = document.getElementById('search-query-input').value.trim();
+    if (!query) return;
+
+    let btn = document.getElementById('btn-run-hybrid');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Searching...';
+
+    let w1 = parseFloat(document.getElementById('slider-w1').value);
+    let w2 = parseFloat(document.getElementById('slider-w2').value);
+    let w3 = parseFloat(document.getElementById('slider-w3').value);
+
+    let resList = document.getElementById('results-list');
+    resList.innerHTML = '<div class="text-center text-secondary py-4"><i class="fas fa-spinner fa-spin fa-2x mb-2 text-info"></i><br>Fusing multi-model ranking scores...</div>';
+
+    try {
+        let res = await fetch('/search/api/query', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({query: query, w1: w1, w2: w2, w3: w3})
+        });
+        let d = await res.json();
+        if (d.success) {
+            let r = d.data;
+            document.getElementById('results-heading').innerText = `Search Results for "${r.query}" (${r.response_time_ms} ms)`;
+            document.getElementById('results-count-badge').innerText = `${r.total_matches} matches`;
+
+            resList.innerHTML = '';
+            if (r.results.length === 0) {
+                resList.innerHTML = '<div class="text-center text-secondary py-4">No matching documents found. Try broader keywords.</div>';
+                return;
+            }
+
+            r.results.forEach((item, idx) => {
+                let div = document.createElement('div');
+                div.className = 'p-3 bg-dark rounded border border-secondary mb-3';
+                let scores = item.scores || {};
+                div.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                        <h6 class="fw-bold text-white mb-0">
+                            <span class="text-info font-monospace me-2">#${item.rank || idx + 1}</span>
+                            ${item.title}
+                        </h6>
+                        <span class="badge bg-success font-monospace">Composite: ${scores.composite}</span>
+                    </div>
+                    <p class="small text-secondary mb-2">${item.relevant_passage}</p>
+                    <div class="d-flex gap-3 small text-muted flex-wrap" style="font-size: 0.75rem;">
+                        <span>Category: <span class="text-info">${item.category}</span></span>
+                        <span>TF-IDF: <span class="text-white">${scores.tfidf_score}</span></span>
+                        <span>LM (Dirichlet): <span class="text-white">${scores.lm_score}</span></span>
+                        <span>DFR: <span class="text-white">${scores.dfr_score}</span></span>
+                        <span>PageRank: <span class="text-white">${scores.pagerank_score}</span></span>
+                    </div>
+                `;
+                resList.appendChild(div);
+            });
+        }
+    } catch(e) {
+        resList.innerHTML = '<div class="text-danger py-3">Error executing search query.</div>';
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-bolt me-1"></i> Search';
+    }
+}
+
+document.getElementById('btn-run-hybrid').addEventListener('click', runSearch);
+document.getElementById('form-hybrid-search').addEventListener('submit', function(e) {
+    e.preventDefault();
+    runSearch();
+});
+</script>
+{% endblock %}

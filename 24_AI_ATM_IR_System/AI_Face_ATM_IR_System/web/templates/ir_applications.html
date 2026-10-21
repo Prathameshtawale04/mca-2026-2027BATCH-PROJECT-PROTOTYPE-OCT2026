@@ -1,0 +1,414 @@
+{% extends "base.html" %}
+
+{% block title %}IR Applications | AI Face ATM & IR System{% endblock %}
+{% block page_title %}Information Retrieval Applications & Semantic Web{% endblock %}
+
+{% block content %}
+<!-- Module Tabs -->
+<div class="card-custom mb-4" style="padding: 0.75rem 1rem;">
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="btn-custom btn-primary-custom irapp-tab-trigger active" onclick="showIrAppTab('atab-collab', this)">
+            <i class="fas fa-users"></i> Collaborative Filtering
+        </button>
+        <button class="btn-custom btn-outline-custom irapp-tab-trigger" onclick="showIrAppTab('atab-content', this)">
+            <i class="fas fa-file-waveform"></i> Content-Based
+        </button>
+        <button class="btn-custom btn-outline-custom irapp-tab-trigger" onclick="showIrAppTab('atab-knowledge', this)">
+            <i class="fas fa-lightbulb"></i> Knowledge-Based Rules
+        </button>
+        <button class="btn-custom btn-outline-custom irapp-tab-trigger" onclick="showIrAppTab('atab-extraction', this)">
+            <i class="fas fa-filter"></i> Information Extraction
+        </button>
+        <button class="btn-custom btn-outline-custom irapp-tab-trigger" onclick="showIrAppTab('atab-semantic', this)">
+            <i class="fas fa-circle-nodes"></i> Semantic Web Graph
+        </button>
+        <button class="btn-custom btn-outline-custom irapp-tab-trigger" onclick="showIrAppTab('atab-pipeline', this)">
+            <i class="fas fa-timeline"></i> Integration Pipeline
+        </button>
+    </div>
+</div>
+
+<!-- 1. Collaborative Filtering Tab -->
+<div id="atab-collab" class="irapp-tab-content">
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card-custom">
+                <div class="card-title-custom">
+                    <span><i class="fas fa-user-gear text-info"></i> User Recommendation Dispatcher</span>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">TARGET USER PROFILE</label>
+                    <select id="collab-user-select" style="width: 100%; padding: 0.65rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+                        <option value="User_Alice">User Alice (Security Specialist)</option>
+                        <option value="User_Bob">User Bob (ATM Hardware Engineer)</option>
+                        <option value="User_Charlie">User Charlie (Cryptography Auditor)</option>
+                    </select>
+                </div>
+                <button id="btn-run-collab" class="btn-custom btn-primary-custom" style="width: 100%; justify-content: center; margin-bottom: 1rem;">
+                    <i class="fas fa-magic"></i> Generate Recommendations
+                </button>
+                <div id="collab-recs-container"></div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card-custom">
+                <div class="card-title-custom">
+                    <span><i class="fas fa-table-cells text-accent"></i> User-Item Utility Rating Matrix</span>
+                </div>
+                <div class="table-responsive" id="collab-matrix-table">
+                    <p style="color: var(--text-muted); font-size: 0.88rem;">Loading utility matrix...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Content-Based Tab -->
+<div id="atab-content" class="irapp-tab-content" style="display: none;">
+    <div class="card-custom">
+        <div class="card-title-custom">
+            <span><i class="fas fa-file-waveform text-success"></i> Content-Based Document Recommendations</span>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Given a currently viewed document, recommends thematically similar resources using TF-IDF and Cosine Similarity.
+        </p>
+        <div class="row g-3 mb-3">
+            <div class="col-md-9">
+                <select id="content-doc-select" style="width: 100%; padding: 0.65rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+                    <option value="1">Doc 1: Biometric ATM Security Architecture Using Face Recognition</option>
+                    <option value="2">Doc 2: Local Binary Patterns Histograms (LBPH) for Real-Time Facial Recognition</option>
+                    <option value="3">Doc 3: Cryptographic PIN Hashing with PBKDF2</option>
+                    <option value="4">Doc 4: Language Models for Information Retrieval</option>
+                    <option value="7">Doc 7: PageRank and Structural Link Analysis</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button id="btn-run-content" class="btn-custom btn-primary-custom" style="width: 100%; justify-content: center;">Find Similar</button>
+            </div>
+        </div>
+
+        <div id="content-recs-output" class="row g-3"></div>
+    </div>
+</div>
+
+<!-- 3. Knowledge-Based Tab -->
+<div id="atab-knowledge" class="irapp-tab-content" style="display: none;">
+    <div class="card-custom">
+        <div class="card-title-custom">
+            <span><i class="fas fa-brain text-warning"></i> Knowledge-Based Inference & Rule Engine</span>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Constraint satisfaction matching: specify requirements and the rule engine infers tailored recommendations.
+        </p>
+        <div class="row g-3 mb-3">
+            <div class="col-md-3">
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">TECHNOLOGY</label>
+                <select id="kb-tech" style="width: 100%; padding: 0.6rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+                    <option value="">Any Technology</option>
+                    <option value="Face Recognition">Face Recognition</option>
+                    <option value="Cryptography">Cryptography</option>
+                    <option value="Search Engine">Search Engine</option>
+                    <option value="Machine Learning">Machine Learning</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">APPLICATION DOMAIN</label>
+                <select id="kb-app" style="width: 100%; padding: 0.6rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+                    <option value="">Any Domain</option>
+                    <option value="ATM Banking">ATM Banking</option>
+                    <option value="Cybersecurity">Cybersecurity</option>
+                    <option value="Web Search">Web Search</option>
+                    <option value="Multi-Factor Auth">Multi-Factor Auth</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">SECURITY LEVEL</label>
+                <select id="kb-sec" style="width: 100%; padding: 0.6rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+                    <option value="">Any Level</option>
+                    <option value="Critical">Critical</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">&nbsp;</label>
+                <button id="btn-run-kb" class="btn-custom btn-primary-custom" style="width: 100%; justify-content: center; height: 38px;">Apply Rules</button>
+            </div>
+        </div>
+
+        <div id="kb-recs-output"></div>
+    </div>
+</div>
+
+<!-- 4. Information Extraction Tab -->
+<div id="atab-extraction" class="irapp-tab-content" style="display: none;">
+    <div class="card-custom">
+        <div class="card-title-custom">
+            <span><i class="fas fa-file-invoice text-info"></i> Information Extraction (Entities & SPO Triples)</span>
+        </div>
+        <div style="margin-bottom: 1rem;">
+            <label style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">INPUT TEXT STREAM</label>
+            <textarea id="ie-input-text" rows="3" style="width: 100%; padding: 0.7rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main); font-size: 0.9rem;">Face recognition is used for ATM authentication. Dr. Alex Vance developed the LBPH model at DeepMind in London. The system prevents fraudulent withdrawals.</textarea>
+        </div>
+        <button id="btn-run-ie" class="btn-custom btn-primary-custom" style="margin-bottom: 1.5rem;"><i class="fas fa-wand-magic-sparkles"></i> Extract Information</button>
+
+        <div class="row g-4" id="ie-results-container" style="display: none;">
+            <div class="col-md-6">
+                <div style="background: var(--bg-secondary); padding: 14px; border-radius: 8px; border: 1px solid var(--card-border);">
+                    <h4 style="font-size: 0.9rem; margin-bottom: 0.75rem;"><i class="fas fa-tags text-accent"></i> Named Entities Discovered</h4>
+                    <div id="ie-entities-view"></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div style="background: var(--bg-secondary); padding: 14px; border-radius: 8px; border: 1px solid var(--card-border);">
+                    <h4 style="font-size: 0.9rem; margin-bottom: 0.75rem;"><i class="fas fa-diagram-project text-success"></i> Subject-Predicate-Object Triples</h4>
+                    <div id="ie-triples-view"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 5. Semantic Web Tab -->
+<div id="atab-semantic" class="irapp-tab-content" style="display: none;">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card-custom">
+                <div class="card-title-custom">
+                    <span><i class="fas fa-plus-circle text-accent"></i> Add Semantic Triple</span>
+                </div>
+                <div style="margin-bottom: 0.75rem;">
+                    <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">SUBJECT</label>
+                    <input type="text" id="triple-s" placeholder="e.g. ATM Camera" style="width: 100%; padding: 0.5rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+                </div>
+                <div style="margin-bottom: 0.75rem;">
+                    <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">PREDICATE</label>
+                    <input type="text" id="triple-p" placeholder="e.g. captures" style="width: 100%; padding: 0.5rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">OBJECT</label>
+                    <input type="text" id="triple-o" placeholder="e.g. Facial Frames" style="width: 100%; padding: 0.5rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+                </div>
+                <button id="btn-add-triple" class="btn-custom btn-primary-custom" style="width: 100%; justify-content: center; margin-bottom: 1rem;">Inject Triple</button>
+
+                <div style="border-top: 1px solid var(--card-border); padding-top: 0.75rem;">
+                    <input type="text" id="kg-filter" placeholder="Filter node (e.g. ATM)" style="width: 100%; padding: 0.5rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main); font-size: 0.8rem; margin-bottom: 0.5rem;">
+                    <button id="btn-filter-kg" class="btn-custom btn-outline-custom" style="width: 100%; justify-content: center; font-size: 0.8rem;">Filter Subgraph</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card-custom">
+                <div class="card-title-custom">
+                    <span><i class="fas fa-circle-nodes text-success"></i> Interactive Semantic Knowledge Graph</span>
+                    <span id="kg-stat-badge" class="badge-custom badge-info">13 Triples</span>
+                </div>
+                <div id="semanticNetwork" class="graph-container"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 6. Integration Pipeline Tab -->
+<div id="atab-pipeline" class="irapp-tab-content" style="display: none;">
+    <div class="card-custom">
+        <div class="card-title-custom">
+            <span><i class="fas fa-timeline text-accent"></i> Specialized Web Information Integration Pipeline</span>
+            <button id="btn-run-pipeline" class="btn-custom btn-primary-custom"><i class="fas fa-play"></i> Run End-to-End Pipeline</button>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Demonstrates: <code>Web Crawler &rarr; HTML Parsing &rarr; Text Cleaning &rarr; Entity Extraction &rarr; Semantic Triples &rarr; Inverted Index &rarr; Recommender</code>.
+        </p>
+
+        <div id="pipeline-stages-container">
+            <p style="color: var(--text-muted); font-size: 0.88rem;">Click 'Run End-to-End Pipeline' to execute and monitor all pipeline stages sequentially.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let semanticNetwork = null;
+
+function showIrAppTab(tabId, btn) {
+    document.querySelectorAll(".irapp-tab-content").forEach(el => el.style.display = "none");
+    document.getElementById(tabId).style.display = "block";
+    document.querySelectorAll(".irapp-tab-trigger").forEach(b => {
+        b.className = "btn-custom btn-outline-custom irapp-tab-trigger";
+    });
+    btn.className = "btn-custom btn-primary-custom irapp-tab-trigger active";
+
+    if (tabId === "atab-collab") loadCollabMatrix();
+    if (tabId === "atab-semantic") loadKnowledgeGraph();
+}
+
+// 1. Collaborative
+async function loadCollabMatrix() {
+    const res = await apiGet("/api/ir_apps/collaborative_matrix");
+    if (res.ok) {
+        const d = res.data;
+        let ths = d.items.map(i => `<th>Doc ${i}</th>`).join("");
+        let rows = d.matrix.map(m => {
+            let tds = d.items.map(i => `<td>${m.ratings[i] || '-'}</td>`).join("");
+            return `<tr><td><strong>${m.user}</strong></td>${tds}</tr>`;
+        }).join("");
+
+        document.getElementById("collab-matrix-table").innerHTML = `
+            <table class="table-custom">
+                <thead><tr><th>User</th>${ths}</tr></thead>
+                <tbody>${rows}</tbody>
+            </table>
+        `;
+    }
+}
+
+document.getElementById("btn-run-collab").addEventListener("click", async () => {
+    const user = document.getElementById("collab-user-select").value;
+    const res = await apiPost("/api/ir_apps/collaborative_recommend", { user: user });
+    if (res.ok) {
+        const c = document.getElementById("collab-recs-container");
+        c.innerHTML = `<h5 style="font-size: 0.85rem; margin-bottom: 8px;">Top Recommendations:</h5>`;
+        res.data.recommendations.forEach(r => {
+            c.innerHTML += `
+                <div style="padding: 10px; background: var(--bg-tertiary); border-radius: 6px; margin-bottom: 6px; font-size: 0.82rem;">
+                    <strong>Doc ID #${r.doc_id}</strong> &bull; Predicted Rating: <span class="badge-custom badge-success">${r.predicted_rating}★</span>
+                    <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px;">${r.reason}</div>
+                </div>
+            `;
+        });
+    }
+});
+
+// 2. Content-Based
+document.getElementById("btn-run-content").addEventListener("click", async () => {
+    const docId = parseInt(document.getElementById("content-doc-select").value);
+    const res = await apiPost("/api/ir_apps/content_recommend", { doc_id: docId });
+    if (res.ok) {
+        const c = document.getElementById("content-recs-output");
+        c.innerHTML = "";
+        res.data.recommendations.forEach(item => {
+            c.innerHTML += `
+                <div class="col-md-6">
+                    <div class="card-custom" style="padding: 1rem; margin-bottom: 0;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <strong style="font-size: 0.9rem;">${item.title}</strong>
+                            <span class="badge-custom badge-info">${Math.round(item.similarity * 100)}% Sim</span>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-accent); margin-bottom: 6px;">Category: ${item.category}</div>
+                        <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0;">${item.reason}</p>
+                    </div>
+                </div>
+            `;
+        });
+    }
+});
+
+// 3. Knowledge-Based
+document.getElementById("btn-run-kb").addEventListener("click", async () => {
+    const criteria = {
+        technology: document.getElementById("kb-tech").value,
+        application: document.getElementById("kb-app").value,
+        security_level: document.getElementById("kb-sec").value
+    };
+    const res = await apiPost("/api/ir_apps/knowledge_recommend", criteria);
+    if (res.ok) {
+        const c = document.getElementById("kb-recs-output");
+        c.innerHTML = `<h5 style="font-size: 0.85rem; margin-bottom: 8px;">Found ${res.data.total_matches} Matched Knowledge Rules:</h5>`;
+        res.data.recommendations.forEach(r => {
+            c.innerHTML += `
+                <div style="padding: 12px; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 8px; margin-bottom: 8px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong>${r.title}</strong>
+                        <span class="badge-custom badge-success">${r.match_percentage}% Rule Match</span>
+                    </div>
+                    <div style="font-size: 0.78rem; color: var(--text-accent); margin: 4px 0;">${r.technology} &bull; ${r.application} &bull; ${r.security_level}</div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 4px 0;">${r.description}</p>
+                    <div style="font-size: 0.72rem; color: var(--text-muted);"><strong>Rule Fired:</strong> ${r.rule_fired}</div>
+                </div>
+            `;
+        });
+    }
+});
+
+// 4. Information Extraction
+document.getElementById("btn-run-ie").addEventListener("click", async () => {
+    const text = document.getElementById("ie-input-text").value.trim();
+    const res = await apiPost("/api/ir_apps/extract_info", { text: text });
+    if (res.ok) {
+        document.getElementById("ie-results-container").style.display = "flex";
+        const eView = document.getElementById("ie-entities-view");
+        const tView = document.getElementById("ie-triples-view");
+        
+        let ent = res.data.entities;
+        eView.innerHTML = `
+            <div style="margin-bottom: 6px;"><strong>Technologies:</strong> ${ent.technologies.map(t => `<span class="badge-custom badge-info">${t}</span>`).join(" ") || "None"}</div>
+            <div style="margin-bottom: 6px;"><strong>Organizations:</strong> ${ent.organizations.map(o => `<span class="badge-custom badge-success">${o}</span>`).join(" ") || "None"}</div>
+            <div style="margin-bottom: 6px;"><strong>Locations:</strong> ${ent.locations.map(l => `<span class="badge-custom badge-warning">${l}</span>`).join(" ") || "None"}</div>
+            <div><strong>Top Keywords:</strong> ${ent.keywords.join(", ")}</div>
+        `;
+
+        tView.innerHTML = res.data.triples.map(tr => `
+            <div style="padding: 6px 10px; background: var(--bg-tertiary); border-radius: 4px; margin-bottom: 6px; font-size: 0.82rem;">
+                <code>(${tr.subject})</code> &rarr; <span style="color: var(--text-accent); font-weight: 600;">[${tr.predicate}]</span> &rarr; <code>(${tr.object})</code>
+            </div>
+        `).join("");
+    }
+});
+
+// 5. Semantic Graph
+async function loadKnowledgeGraph(kw = null) {
+    const url = kw ? `/api/ir_apps/knowledge_graph?keyword=${encodeURIComponent(kw)}` : "/api/ir_apps/knowledge_graph";
+    const res = await apiGet(url);
+    if (res.ok) {
+        document.getElementById("kg-stat-badge").innerText = `${res.data.relationship_count} Triples`;
+        renderVisNetwork("semanticNetwork", res.data.vis_graph.nodes, res.data.vis_graph.edges);
+    }
+}
+document.getElementById("btn-filter-kg").addEventListener("click", () => {
+    loadKnowledgeGraph(document.getElementById("kg-filter").value.trim());
+});
+
+document.getElementById("btn-add-triple").addEventListener("click", async () => {
+    const s = document.getElementById("triple-s").value.trim();
+    const p = document.getElementById("triple-p").value.trim();
+    const o = document.getElementById("triple-o").value.trim();
+    if (!s || !p || !o) {
+        showToast("Fill in Subject, Predicate, and Object.", "warning");
+        return;
+    }
+    const res = await apiPost("/api/ir_apps/add_triple", { subject: s, predicate: p, object: o });
+    if (res.ok) {
+        showToast(res.data.message, "success");
+        loadKnowledgeGraph();
+        document.getElementById("triple-s").value = "";
+        document.getElementById("triple-p").value = "";
+        document.getElementById("triple-o").value = "";
+    }
+});
+
+// 6. Integration Pipeline
+document.getElementById("btn-run-pipeline").addEventListener("click", async () => {
+    showToast("Launching Specialized Information Integration Pipeline...", "info");
+    const res = await apiPost("/api/ir_apps/run_pipeline", {});
+    if (res.ok) {
+        showToast("Pipeline Completed Successfully!", "success");
+        const c = document.getElementById("pipeline-stages-container");
+        c.innerHTML = `<h5 style="margin-bottom: 1rem;">Total Latency: ${res.data.total_latency_ms} ms &bull; Status: <span class="badge-custom badge-success">COMPLETED</span></h5>`;
+        res.data.stages.forEach(s => {
+            c.innerHTML += `
+                <div style="padding: 12px; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 8px; margin-bottom: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <strong>Stage ${s.stage}: ${s.name}</strong>
+                        <span class="badge-custom badge-info">${s.latency_ms} ms</span>
+                    </div>
+                    <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">${s.output_summary}</div>
+                </div>
+            `;
+        });
+    }
+});
+</script>
+{% endblock %}

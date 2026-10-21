@@ -1,0 +1,182 @@
+{
+  "generated_at": "2026-10-13T18:07:08.753351+00:00",
+  "fraud_model": {
+    "model_name": "Random Forest Anomaly Classifier (Ensemble)",
+    "test_samples": 1050,
+    "accuracy": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1_score": 1.0,
+    "roc_auc": 1.0,
+    "confusion_matrix": {
+      "true_negative": 966,
+      "false_positive": 0,
+      "false_negative": 0,
+      "true_positive": 84
+    },
+    "roc_curve": [
+      {
+        "fpr": 0.0,
+        "tpr": 0.0
+      },
+      {
+        "fpr": 0.0,
+        "tpr": 0.0
+      },
+      {
+        "fpr": 0.0,
+        "tpr": 0.0
+      },
+      {
+        "fpr": 0.0,
+        "tpr": 0.821
+      },
+      {
+        "fpr": 0.0,
+        "tpr": 0.821
+      },
+      {
+        "fpr": 0.0,
+        "tpr": 0.988
+      },
+      {
+        "fpr": 0.0,
+        "tpr": 0.988
+      },
+      {
+        "fpr": 0.0,
+        "tpr": 1.0
+      },
+      {
+        "fpr": 0.0,
+        "tpr": 1.0
+      },
+      {
+        "fpr": 0.004,
+        "tpr": 1.0
+      },
+      {
+        "fpr": 0.004,
+        "tpr": 1.0
+      },
+      {
+        "fpr": 1.0,
+        "tpr": 1.0
+      }
+    ],
+    "feature_importance": [
+      {
+        "feature": "amount",
+        "importance": 45.48
+      },
+      {
+        "feature": "balance_drain_ratio",
+        "importance": 20.25
+      },
+      {
+        "feature": "amount_zscore",
+        "importance": 19.17
+      },
+      {
+        "feature": "is_near_limit",
+        "importance": 6.76
+      },
+      {
+        "feature": "velocity_1h",
+        "importance": 4.86
+      },
+      {
+        "feature": "hour_of_day",
+        "importance": 1.86
+      },
+      {
+        "feature": "is_night",
+        "importance": 1.62
+      }
+    ]
+  },
+  "face_verification": {
+    "model_name": "128-D Spatial-Frequency Face Embeddings",
+    "optimal_threshold": 0.72,
+    "estimated_eer": 2.1,
+    "threshold_sweep": [
+      {
+        "threshold": 0.5,
+        "far_percent": 50.0,
+        "frr_percent": 1.0,
+        "accuracy_percent": 74.5
+      },
+      {
+        "threshold": 0.55,
+        "far_percent": 30.33,
+        "frr_percent": 1.49,
+        "accuracy_percent": 84.09
+      },
+      {
+        "threshold": 0.6,
+        "far_percent": 18.39,
+        "frr_percent": 2.23,
+        "accuracy_percent": 89.69
+      },
+      {
+        "threshold": 0.65,
+        "far_percent": 11.16,
+        "frr_percent": 3.32,
+        "accuracy_percent": 92.76
+      },
+      {
+        "threshold": 0.7,
+        "far_percent": 6.77,
+        "frr_percent": 4.95,
+        "accuracy_percent": 94.14
+      },
+      {
+        "threshold": 0.72,
+        "far_percent": 5.54,
+        "frr_percent": 5.81,
+        "accuracy_percent": 94.33
+      },
+      {
+        "threshold": 0.75,
+        "far_percent": 4.1,
+        "frr_percent": 7.39,
+        "accuracy_percent": 94.25
+      },
+      {
+        "threshold": 0.8,
+        "far_percent": 2.49,
+        "frr_percent": 11.02,
+        "accuracy_percent": 93.25
+      },
+      {
+        "threshold": 0.85,
+        "far_percent": 1.51,
+        "frr_percent": 16.44,
+        "accuracy_percent": 91.03
+      }
+    ]
+  },
+  "information_retrieval": {
+    "tfidf": {
+      "mean_precision_at_3": 0.333,
+      "mean_recall_at_3": 1.0,
+      "MAP": 1.0,
+      "MRR": 1.0,
+      "F1_at_3": 0.5
+    },
+    "bm25": {
+      "mean_precision_at_3": 0.333,
+      "mean_recall_at_3": 1.0,
+      "MAP": 1.0,
+      "MRR": 1.0,
+      "F1_at_3": 0.5
+    },
+    "query_likelihood": {
+      "mean_precision_at_3": 0.333,
+      "mean_recall_at_3": 1.0,
+      "MAP": 1.0,
+      "MRR": 1.0,
+      "F1_at_3": 0.5
+    }
+  }
+}

@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}Financial Assistance &bull; Personal Finance Manager{% endblock %}
+{% block breadcrumb %}Finance &bull; 50/30/20 Wealth Planner{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1 text-white"><i class="fas fa-chart-pie text-warning me-2"></i>Personal Financial Assistance</h4>
+        <p class="text-secondary small mb-0">50/30/20 budgeting &bull; Expense categorization &bull; Automated savings vaults</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-sm btn-primary d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modal-add-entry">
+            <i class="fas fa-plus"></i> Add Income / Expense
+        </button>
+        <button class="btn btn-sm btn-outline-info d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modal-add-goal">
+            <i class="fas fa-piggy-bank"></i> New Savings Goal
+        </button>
+    </div>
+</div>
+
+<!-- 50/30/20 Wealth Breakdown Cards -->
+<div class="row g-3 mb-4">
+    <!-- Total Income -->
+    <div class="col-md-3">
+        <div class="card-custom p-3 h-100">
+            <span class="text-secondary small text-uppercase fw-bold">Monthly Income</span>
+            <h3 class="fw-bold text-white my-1">${{ '%.2f'|format(budget.total_income if budget else 4500.0) }}</h3>
+            <small class="text-info">Budget Month: {{ cur_month }}</small>
+        </div>
+    </div>
+    <!-- 50% Needs -->
+    <div class="col-md-3">
+        <div class="card-custom p-3 h-100 border-start border-4 border-primary">
+            <div class="d-flex justify-content-between">
+                <span class="text-secondary small text-uppercase fw-bold">50% Needs</span>
+                <span class="badge bg-primary">Essentials</span>
+            </div>
+            <h3 class="fw-bold text-white my-1">${{ '%.2f'|format(budget.needs_budget if budget else 2250.0) }}</h3>
+            <small class="text-secondary">Rent, Food, Utilities, Health</small>
+        </div>
+    </div>
+    <!-- 30% Wants -->
+    <div class="col-md-3">
+        <div class="card-custom p-3 h-100 border-start border-4 border-warning">
+            <div class="d-flex justify-content-between">
+                <span class="text-secondary small text-uppercase fw-bold">30% Wants</span>
+                <span class="badge bg-warning text-dark">Lifestyle</span>
+            </div>
+            <h3 class="fw-bold text-white my-1">${{ '%.2f'|format(budget.wants_budget if budget else 1350.0) }}</h3>
+            <small class="text-secondary">Dining, Entertainment, Hobbies</small>
+        </div>
+    </div>
+    <!-- 20% Savings -->
+    <div class="col-md-3">
+        <div class="card-custom p-3 h-100 border-start border-4 border-success">
+            <div class="d-flex justify-content-between">
+                <span class="text-secondary small text-uppercase fw-bold">20% Wealth</span>
+                <span class="badge bg-success">Investments</span>
+            </div>
+            <h3 class="fw-bold text-white my-1">${{ '%.2f'|format(budget.savings_budget if budget else 900.0) }}</h3>
+            <small class="text-secondary">Emergency Funds, Stocks, APY</small>
+        </div>
+    </div>
+</div>
+
+<!-- Savings Goals and Recent Transactions -->
+<div class="row g-4">
+    <!-- Savings Goals -->
+    <div class="col-lg-5">
+        <div class="card-custom h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-white mb-0">Active Savings Vaults</h5>
+                <span class="badge bg-success">{{ goals|length }} Goals</span>
+            </div>
+
+            {% if goals %}
+                {% for g in goals %}
+                {% set pct = (g.current_amount / g.target_amount * 100) if g.target_amount > 0 else 0 %}
+                <div class="p-3 bg-dark rounded border border-secondary mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold text-white">{{ g.goal_name }}</span>
+                        <span class="badge bg-secondary font-monospace">${{ '%.0f'|format(g.current_amount) }} / ${{ '%.0f'|format(g.target_amount) }}</span>
+                    </div>
+                    <div class="progress bg-secondary-subtle mb-2" style="height: 10px;">
+                        <div class="progress-bar bg-success" style="width: {{ pct|round }}%;"></div>
+                    </div>
+                    <div class="d-flex justify-content-between small text-secondary" style="font-size: 0.75rem;">
+                        <span>Progress: {{ pct|round(1) }}%</span>
+                        <span>Target: {{ g.target_date or 'No deadline' }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-4 text-secondary">
+                    <i class="fas fa-piggy-bank fs-2 mb-2 d-block opacity-50"></i>
+                    No savings goals established yet.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Income & Expense Ledger -->
+    <div class="col-lg-7">
+        <div class="card-custom h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-white mb-0">Monthly Ledger Entries</h5>
+                <span class="text-secondary small">{{ entries|length }} recent</span>
+            </div>
+
+            {% if entries %}
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0 align-middle">
+                    <thead>
+                        <tr class="text-secondary small border-secondary">
+                            <th>TYPE</th>
+                            <th>CATEGORY</th>
+                            <th>DESCRIPTION</th>
+                            <th>AMOUNT</th>
+                            <th>DATE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in entries %}
+                        <tr class="border-secondary-subtle">
+                            <td>
+                                {% if item.entry_type == 'INCOME' %}
+                                    <span class="badge bg-success bg-opacity-25 text-success">INC</span>
+                                {% else %}
+                                    <span class="badge bg-danger bg-opacity-25 text-danger">EXP</span>
+                                {% endif %}
+                            </td>
+                            <td><span class="badge bg-dark border border-secondary text-info">{{ item.category }}</span></td>
+                            <td class="small text-secondary">{{ item.description or '-' }}</td>
+                            <td class="fw-semibold {% if item.entry_type == 'INCOME' %}text-success{% else %}text-danger{% endif %} font-monospace">
+                                {% if item.entry_type == 'INCOME' %}+{% else %}-{% endif %}${{ '%.2f'|format(item.amount) }}
+                            </td>
+                            <td class="small text-secondary">{{ item.entry_date }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4 text-secondary">
+                <i class="fas fa-receipt fs-2 mb-2 d-block opacity-50"></i>
+                No expense or income entries logged this month.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Guidance Tips & Chart Row -->
+<div class="row g-4 mb-4">
+    <!-- Educational Rule-Based Guidance -->
+    <div class="col-lg-6">
+        <div class="card-custom h-100">
+            <h5 class="fw-bold text-white mb-3"><i class="fas fa-lightbulb text-warning me-2"></i>Personalized 50/30/20 Guidance</h5>
+            <div class="list-group list-group-flush bg-transparent">
+                {% for tip in summary.guidance_tips %}
+                <div class="list-group-item bg-transparent text-secondary border-secondary-subtle px-0 d-flex gap-2">
+                    <i class="fas fa-circle-check text-info mt-1"></i>
+                    <span class="small">{{ tip }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="alert alert-secondary bg-dark border-secondary small mt-3 mb-0" style="font-size: 0.72rem;">
+                <i class="fas fa-info-circle me-1"></i> {{ summary.disclaimer }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Expense Category Breakdown Chart -->
+    <div class="col-lg-6">
+        <div class="card-custom h-100">
+            <h5 class="fw-bold text-white mb-3">50/30/20 Target vs Actual Comparison</h5>
+            <div class="p-3 bg-dark rounded border border-secondary">
+                <div class="d-flex justify-content-between text-secondary small mb-1">
+                    <span>Needs (Actual: ${{ '%.2f'|format(summary.actuals.needs) }} / Target: ${{ '%.2f'|format(summary.targets.needs) }})</span>
+                </div>
+                <div class="progress bg-secondary-subtle mb-3" style="height: 12px;">
+                    <div class="progress-bar bg-primary" style="width: {{ 50 if summary.targets.needs > 0 else 0 }}%;"></div>
+                </div>
+
+                <div class="d-flex justify-content-between text-secondary small mb-1">
+                    <span>Wants (Actual: ${{ '%.2f'|format(summary.actuals.wants) }} / Target: ${{ '%.2f'|format(summary.targets.wants) }})</span>
+                </div>
+                <div class="progress bg-secondary-subtle mb-3" style="height: 12px;">
+                    <div class="progress-bar bg-warning" style="width: {{ 30 if summary.targets.wants > 0 else 0 }}%;"></div>
+                </div>
+
+                <div class="d-flex justify-content-between text-secondary small mb-1">
+                    <span>Savings (Net: ${{ '%.2f'|format(summary.net_savings) }} / Target: ${{ '%.2f'|format(summary.targets.savings) }})</span>
+                </div>
+                <div class="progress bg-secondary-subtle" style="height: 12px;">
+                    <div class="progress-bar bg-success" style="width: {{ 20 if summary.targets.savings > 0 else 0 }}%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add Entry -->
+<div class="modal fade" id="modal-add-entry" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold">Log Financial Entry</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-add-entry">
+                    <div class="mb-3">
+                        <label class="form-label small text-secondary">TYPE</label>
+                        <select class="form-select bg-dark border-secondary text-white" id="entry-type" required>
+                            <option value="EXPENSE">Expense</option>
+                            <option value="INCOME">Income</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-secondary">CATEGORY</label>
+                        <select class="form-select bg-dark border-secondary text-white" id="entry-category" required>
+                            <option value="Housing">Housing (Need)</option>
+                            <option value="Groceries">Groceries (Need)</option>
+                            <option value="Utilities">Utilities (Need)</option>
+                            <option value="Dining Out">Dining Out (Want)</option>
+                            <option value="Entertainment">Entertainment (Want)</option>
+                            <option value="Salary">Salary (Income)</option>
+                            <option value="Investments">Investments (Savings)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-secondary">AMOUNT ($)</label>
+                        <input type="number" step="0.01" min="0.01" class="form-control bg-dark border-secondary text-white" id="entry-amount" placeholder="0.00" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-secondary">DESCRIPTION</label>
+                        <input type="text" class="form-control bg-dark border-secondary text-white" id="entry-desc" placeholder="e.g. Weekly grocery trip">
+                    </div>
+                    <button type="button" class="btn btn-primary w-100" onclick="submitEntry()">Save Entry</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Add Savings Goal -->
+<div class="modal fade" id="modal-add-goal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title fw-bold">New Savings Goal Vault</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-add-goal">
+                    <div class="mb-3">
+                        <label class="form-label small text-secondary">GOAL NAME</label>
+                        <input type="text" class="form-control bg-dark border-secondary text-white" id="goal-name" placeholder="e.g. Vacation Fund" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-secondary">TARGET AMOUNT ($)</label>
+                        <input type="number" step="10" min="10" class="form-control bg-dark border-secondary text-white" id="goal-target" placeholder="2000.00" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small text-secondary">TARGET DATE</label>
+                        <input type="date" class="form-control bg-dark border-secondary text-white" id="goal-date">
+                    </div>
+                    <button type="button" class="btn btn-success w-100" onclick="submitGoal()">Establish Vault</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function submitEntry() {
+    let type = document.getElementById('entry-type').value;
+    let cat = document.getElementById('entry-category').value;
+    let amt = parseFloat(document.getElementById('entry-amount').value);
+    let desc = document.getElementById('entry-desc').value;
+
+    if (!amt || amt <= 0) {
+        alert("Enter a valid amount.");
+        return;
+    }
+
+    let res = await fetch("{{ url_for('finance.api_add_entry') }}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ entry_type: type, category: cat, amount: amt, description: desc })
+    });
+    let data = await res.json();
+    if (data.success) {
+        window.location.reload();
+    } else {
+        alert(data.message);
+    }
+}
+
+async function submitGoal() {
+    let name = document.getElementById('goal-name').value;
+    let target = parseFloat(document.getElementById('goal-target').value);
+    let dt = document.getElementById('goal-date').value;
+
+    if (!name || !target || target <= 0) {
+        alert("Enter goal name and positive target amount.");
+        return;
+    }
+
+    let res = await fetch("{{ url_for('finance.api_add_goal') }}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ goal_name: name, target_amount: target, target_date: dt })
+    });
+    let data = await res.json();
+    if (data.success) {
+        window.location.reload();
+    } else {
+        alert(data.message);
+    }
+}
+</script>
+{% endblock %}

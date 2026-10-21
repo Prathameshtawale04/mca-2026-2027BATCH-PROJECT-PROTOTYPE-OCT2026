@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard &bull; Mira AI Smart ATM &amp; IR System{% endblock %}
+{% block breadcrumb %}Dashboard Overview{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1 text-white">Hello, {{ current_user.full_name }}</h4>
+        <p class="text-secondary small mb-0">ATM Account: <span class="text-info fw-mono">{{ current_user.account_number or 'Unassigned' }}</span> &bull; Role: <span class="badge bg-secondary text-uppercase">{{ current_user.role }}</span></p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="/atm" class="btn btn-sm btn-primary d-flex align-items-center gap-2">
+            <i class="fas fa-money-bill-transfer"></i> ATM Simulator
+        </a>
+        <a href="/face/verify" class="btn btn-sm btn-outline-info d-flex align-items-center gap-2">
+            <i class="fas fa-camera"></i> Verify Face
+        </a>
+        <a href="/search/hybrid" class="btn btn-sm btn-outline-light d-flex align-items-center gap-2">
+            <i class="fas fa-magnifying-glass"></i> Hybrid Search
+        </a>
+    </div>
+</div>
+
+<!-- Key Stat Cards -->
+<div class="row g-3 mb-4">
+    <!-- Available Balance Card -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="card-custom h-100 p-3">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-secondary small text-uppercase fw-bold">Available Balance</span>
+                <div class="p-2 rounded bg-primary bg-opacity-10 text-primary">
+                    <i class="fas fa-wallet fs-5"></i>
+                </div>
+            </div>
+            <h3 class="fw-bold text-white mb-1">${{ '%.2f'|format(account.balance if account else current_user.balance) }}</h3>
+            <div class="small text-secondary">
+                Daily Limit: <span class="text-light">${{ '%.2f'|format(account.daily_limit if account else 5000.0) }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Budget Spending Card -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="card-custom h-100 p-3">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-secondary small text-uppercase fw-bold">Monthly Spending</span>
+                <div class="p-2 rounded bg-warning bg-opacity-10 text-warning">
+                    <i class="fas fa-receipt fs-5"></i>
+                </div>
+            </div>
+            <h3 class="fw-bold text-white mb-1">${{ '%.2f'|format(total_spent) }}</h3>
+            <div class="small text-secondary">
+                Budget (50% Needs): <span class="text-light">${{ '%.2f'|format(budget.needs_budget if budget else 2250.0) }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Savings Goals Active -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="card-custom h-100 p-3">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-secondary small text-uppercase fw-bold">Savings Goals</span>
+                <div class="p-2 rounded bg-success bg-opacity-10 text-success">
+                    <i class="fas fa-piggy-bank fs-5"></i>
+                </div>
+            </div>
+            <h3 class="fw-bold text-white mb-1">{{ goals|length }} Active</h3>
+            <div class="small text-secondary">
+                Target Allocation: <span class="text-success fw-semibold">20% Wealth Rule</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- IR Index Corpus -->
+    <div class="col-sm-6 col-xl-3">
+        <div class="card-custom h-100 p-3">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-secondary small text-uppercase fw-bold">IR Search Corpus</span>
+                <div class="p-2 rounded bg-info bg-opacity-10 text-info">
+                    <i class="fas fa-book-open fs-5"></i>
+                </div>
+            </div>
+            <h3 class="fw-bold text-white mb-1">{{ doc_count }} Documents</h3>
+            <div class="small text-secondary">
+                Indexed in <span class="text-info fw-semibold">BM25 / LM / DFR</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Row: Recent Transactions & Active Savings Goals -->
+<div class="row g-4">
+    <!-- Recent Transactions Table -->
+    <div class="col-lg-8">
+        <div class="card-custom">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-white mb-0">Recent ATM Transactions</h5>
+                <a href="/atm" class="text-info small text-decoration-none fw-semibold">Open Simulator &rarr;</a>
+            </div>
+
+            {% if transactions %}
+            <div class="table-responsive">
+                <table class="table table-dark table-hover mb-0 align-middle" style="background: transparent;">
+                    <thead>
+                        <tr class="text-secondary small border-secondary">
+                            <th>REF #</th>
+                            <th>TYPE</th>
+                            <th>AMOUNT</th>
+                            <th>BALANCE AFTER</th>
+                            <th>DATE &amp; TIME</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tx in transactions %}
+                        <tr class="border-secondary-subtle">
+                            <td><span class="badge bg-dark border border-secondary text-info font-monospace">{{ tx.reference_no }}</span></td>
+                            <td>
+                                {% if tx.type == 'DEPOSIT' %}
+                                    <span class="badge bg-success bg-opacity-25 text-success border border-success-subtle">DEPOSIT</span>
+                                {% elif tx.type == 'WITHDRAWAL' %}
+                                    <span class="badge bg-danger bg-opacity-25 text-danger border border-danger-subtle">WITHDRAWAL</span>
+                                {% else %}
+                                    <span class="badge bg-info bg-opacity-25 text-info border border-info-subtle">{{ tx.type }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="fw-semibold {% if tx.type == 'DEPOSIT' %}text-success{% else %}text-danger{% endif %}">
+                                {% if tx.type == 'DEPOSIT' %}+{% else %}-{% endif %}${{ '%.2f'|format(tx.amount) }}
+                            </td>
+                            <td class="text-secondary font-monospace">${{ '%.2f'|format(tx.balance_after) }}</td>
+                            <td class="small text-secondary">{{ tx.timestamp }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4 text-secondary">
+                <i class="fas fa-receipt fs-2 mb-2 d-block opacity-50"></i>
+                No transaction records found yet. Use the ATM simulator to make deposits or withdrawals.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Active Savings Goals & Syllabus Quick Links -->
+    <div class="col-lg-4">
+        <!-- Savings Goals Card -->
+        <div class="card-custom mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold text-white mb-0">Savings Vaults</h5>
+                <a href="/finance" class="text-info small text-decoration-none fw-semibold">Manage &rarr;</a>
+            </div>
+
+            {% if goals %}
+                {% for g in goals %}
+                {% set pct = (g.current_amount / g.target_amount * 100) if g.target_amount > 0 else 0 %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span class="fw-semibold text-white">{{ g.goal_name }}</span>
+                        <span class="text-info">${{ '%.0f'|format(g.current_amount) }} / ${{ '%.0f'|format(g.target_amount) }}</span>
+                    </div>
+                    <div class="progress bg-dark" style="height: 8px;">
+                        <div class="progress-bar bg-info" role="progressbar" style="width: {{ pct|round }}%;" aria-valuenow="{{ pct|round }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-secondary small mb-0">No active savings goals. Create one in the Financial Assistance module.</p>
+            {% endif %}
+        </div>
+
+        <!-- Academic Units Quick Access -->
+        <div class="card-custom">
+            <h5 class="fw-bold text-white mb-3">Academic Syllabus Workbenches</h5>
+            <div class="list-group list-group-flush bg-transparent">
+                <a href="/ir/language-models" class="list-group-item bg-transparent text-white border-secondary-subtle px-0 d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-semibold small"><i class="fas fa-brain text-info me-2"></i>Unit IV: Language Models</div>
+                        <small class="text-secondary">DFA, N-grams, Dirichlet, DFR, Passages</small>
+                    </div>
+                    <i class="fas fa-chevron-right text-secondary small"></i>
+                </a>
+                <a href="/ir/web-retrieval" class="list-group-item bg-transparent text-white border-secondary-subtle px-0 d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-semibold small"><i class="fas fa-spider text-info me-2"></i>Unit V: Web Retrieval</div>
+                        <small class="text-secondary">PageRank, MapReduce, Crawler, Parallel</small>
+                    </div>
+                    <i class="fas fa-chevron-right text-secondary small"></i>
+                </a>
+                <a href="/ir/applications" class="list-group-item bg-transparent text-white border-secondary-subtle px-0 d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-semibold small"><i class="fas fa-diagram-project text-info me-2"></i>Unit VI: IR Applications</div>
+                        <small class="text-secondary">Collaborative, Content-based, Triples, RDF</small>
+                    </div>
+                    <i class="fas fa-chevron-right text-secondary small"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

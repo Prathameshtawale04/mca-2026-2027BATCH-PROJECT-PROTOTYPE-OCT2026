@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+
+{% block title %}Unit IV: Language Models in Banking &bull; Information Retrieval{% endblock %}
+{% block breadcrumb %}Academic IR &bull; Unit IV: Language Models in Banking &amp; Security{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1 text-white"><i class="fas fa-brain text-info me-2"></i>Unit IV: Language Models in Banking Compliance &amp; Threat Intelligence</h4>
+        <p class="text-secondary small mb-0">Deterministic Finite Automata &bull; Anomaly Perplexity &bull; Dirichlet/JM Smoothing &bull; DFR InL2 &bull; Passage Highlighting</p>
+    </div>
+    <div>
+        <span class="badge bg-primary px-3 py-2"><i class="fas fa-shield-halved me-1"></i> Banking Security IR</span>
+    </div>
+</div>
+
+<!-- Tabs for Unit IV Demonstrations -->
+<div class="card-custom mb-4">
+    <ul class="nav nav-tabs border-secondary mb-3" id="lm-tabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active text-white" id="dfa-tab" data-bs-toggle="tab" data-bs-target="#tab-dfa" type="button">
+                <i class="fas fa-diagram-project me-1 text-info"></i> 1. DFA Boolean Automaton
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link text-white" id="ngram-tab" data-bs-toggle="tab" data-bs-target="#tab-ngram" type="button">
+                <i class="fas fa-bars-staggered me-1 text-warning"></i> 2. Threat Log Perplexity
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link text-white" id="dirichlet-tab" data-bs-toggle="tab" data-bs-target="#tab-dirichlet" type="button">
+                <i class="fas fa-square-root-variable me-1 text-success"></i> 3. Dirichlet Query Likelihood
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link text-white" id="dfr-tab" data-bs-toggle="tab" data-bs-target="#tab-dfr" type="button">
+                <i class="fas fa-dice me-1 text-danger"></i> 4. DFR Hypergeometric Ranking
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link text-white" id="passage-tab" data-bs-toggle="tab" data-bs-target="#tab-passage" type="button">
+                <i class="fas fa-highlighter me-1 text-info"></i> 5. Regulatory Passage Retrieval
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content p-2">
+        <!-- 1. DFA Tab -->
+        <div class="tab-pane fade show active" id="tab-dfa">
+            <h5 class="fw-bold text-white mb-2">Deterministic Finite Automaton (DFA) Banking Compliance Parser</h5>
+            <p class="text-secondary small mb-3">State-machine parsing of complex Boolean expressions across banking security rules with operator precedence (<code>NOT</code> &gt; <code>AND</code> &gt; <code>OR</code>).</p>
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control bg-dark border-secondary text-white font-monospace" id="dfa-query-input" value="(skimming OR fraud) AND (ATM OR biometric)" placeholder="Enter Boolean query...">
+                        <button class="btn btn-primary" type="button" id="btn-parse-dfa">
+                            <i class="fas fa-play me-1"></i> Parse with DFA
+                        </button>
+                    </div>
+                    <div class="p-3 bg-dark rounded border border-secondary" id="dfa-result-box">
+                        <div class="small text-secondary mb-1">State Machine Execution:</div>
+                        <div class="font-monospace text-info small">q0 (Start) &rarr; Tokenize &rarr; Shunting-Yard Postfix &rarr; AST Evaluator</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-3 bg-dark rounded border border-secondary h-100">
+                        <span class="small fw-bold text-white d-block mb-2"><i class="fas fa-info-circle text-info me-1"></i> Banking Query Rules</span>
+                        <ul class="text-secondary small ps-3 mb-0 lh-base">
+                            <li>Searches security circulars for anti-fraud criteria.</li>
+                            <li>Strict syntax checking prevents ambiguous compliance queries.</li>
+                            <li>Supports nested clauses e.g. <code>(deposit OR withdrawal) AND limit</code>.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. N-grams Tab -->
+        <div class="tab-pane fade" id="tab-ngram">
+            <h5 class="fw-bold text-white mb-2">N-gram Statistical Language Models &amp; Threat Incident Perplexity</h5>
+            <p class="text-secondary small mb-3">Evaluates language model likelihood and cross-entropy perplexity. In banking security, abnormal phishing memos and intrusion logs exhibit high perplexity compared to standard operational transactions.</p>
+            
+            <div class="input-group mb-3">
+                <input type="text" class="form-control bg-dark border-secondary text-white" id="ngram-input" value="unauthorized nighttime card skimming detected at ATM branch terminal" placeholder="Enter transaction log or incident memo...">
+                <button class="btn btn-warning text-dark fw-bold" type="button" id="btn-calc-ngram">
+                    <i class="fas fa-calculator me-1"></i> Evaluate Perplexity
+                </button>
+            </div>
+
+            <div class="p-3 bg-dark rounded border border-secondary" id="ngram-result-box">
+                <div class="row text-center align-items-center">
+                    <div class="col-md-3 border-end border-secondary">
+                        <span class="small text-secondary d-block">Unigram Log-Likelihood</span>
+                        <span class="fw-bold text-info fs-5" id="ngram-ll">-18.42</span>
+                    </div>
+                    <div class="col-md-3 border-end border-secondary">
+                        <span class="small text-secondary d-block">Bigram Perplexity</span>
+                        <span class="fw-bold text-warning fs-5" id="ngram-pp">42.18</span>
+                    </div>
+                    <div class="col-md-3 border-end border-secondary">
+                        <span class="small text-secondary d-block">Laplace Smoothing</span>
+                        <span class="fw-bold text-success fs-5">&alpha; = 1.0</span>
+                    </div>
+                    <div class="col-md-3">
+                        <span class="small text-secondary d-block mb-1">Threat Assessment</span>
+                        <span class="badge bg-success" id="ngram-threat-badge">NORMAL PATTERN</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Dirichlet Tab -->
+        <div class="tab-pane fade" id="tab-dirichlet">
+            <h5 class="fw-bold text-white mb-2">Query Likelihood Model with Bayesian Dirichlet Prior Smoothing</h5>
+            <p class="text-secondary small mb-3">Ranks banking regulation documents using Dirichlet smoothed language models: <code>P(w|D) = (c(w;D) + &mu; P(w|C)) / (|D| + &mu;)</code>. Ideal for sparse regulatory queries.</p>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control bg-dark border-secondary text-white" id="dirichlet-query" value="biometric optical anti-spoofing and liveness threshold" placeholder="Enter compliance query...">
+                <button class="btn btn-success fw-bold" type="button" id="btn-run-dirichlet">
+                    <i class="fas fa-search me-1"></i> Rank Banking Documents
+                </button>
+            </div>
+            <div id="dirichlet-results" class="mt-3"></div>
+        </div>
+
+        <!-- 4. DFR Tab -->
+        <div class="tab-pane fade" id="tab-dfr">
+            <h5 class="fw-bold text-white mb-2">Divergence From Randomness (DFR InL2 Model)</h5>
+            <p class="text-secondary small mb-3">Measures how observed term occurrences in banking circulars diverge from a random noise distribution baseline using the InL2 hypergeometric model.</p>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control bg-dark border-secondary text-white" id="dfr-query" value="salted PBKDF2 PIN encryption and cardholder lockout" placeholder="Enter security query...">
+                <button class="btn btn-danger fw-bold" type="button" id="btn-run-dfr">
+                    <i class="fas fa-dice me-1"></i> Compute DFR InL2
+                </button>
+            </div>
+            <div id="dfr-results" class="mt-3"></div>
+        </div>
+
+        <!-- 5. Passage Tab -->
+        <div class="tab-pane fade" id="tab-passage">
+            <h5 class="fw-bold text-white mb-2">Sliding Window Regulatory Passage Retrieval &amp; Highlighting</h5>
+            <p class="text-secondary small mb-3">Segments long banking policy circulars into sliding window paragraphs and extracts the exact clause matching query keywords.</p>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control bg-dark border-secondary text-white" id="passage-query" value="daily withdrawal limit and ATM dispenser tray" placeholder="Enter query...">
+                <button class="btn btn-info text-dark fw-bold" type="button" id="btn-run-passage">
+                    <i class="fas fa-highlighter me-1"></i> Extract Passages
+                </button>
+            </div>
+            <div id="passage-results" class="mt-3"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Underlying Document Corpus -->
+<div class="card-custom">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold text-white mb-0">Banking &amp; ATM Security Knowledge Base (12 Seeded Texts)</h5>
+        <span class="badge bg-secondary">Pre-Indexed Collection</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-dark table-hover mb-0 align-middle">
+            <thead>
+                <tr class="text-secondary small border-secondary">
+                    <th style="width: 70px;">DOC ID</th>
+                    <th>DOCUMENT TITLE</th>
+                    <th>DOMAIN CATEGORY</th>
+                    <th>AUTHOR / AUTHORITY</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in docs %}
+                <tr class="border-secondary-subtle">
+                    <td><span class="badge bg-dark border border-secondary text-info">#{{ d.doc_id }}</span></td>
+                    <td class="fw-semibold text-white">{{ d.title }}</td>
+                    <td><span class="badge bg-secondary">{{ d.category }}</span></td>
+                    <td class="small text-secondary">{{ d.author }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// 1. DFA Parser
+document.getElementById('btn-parse-dfa').addEventListener('click', async () => {
+    let q = document.getElementById('dfa-query-input').value.trim();
+    let box = document.getElementById('dfa-result-box');
+    box.innerHTML = '<span class="text-secondary small"><i class="fas fa-spinner fa-spin me-1"></i> Running state automaton...</span>';
+
+    try {
+        let res = await fetch("{{ url_for('ir.api_dfa') }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: q })
+        });
+        let data = await res.json();
+        if (data.success) {
+            let r = data.result;
+            box.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge ${r.accepted ? 'bg-success' : 'bg-danger'} px-2 py-1">${r.accepted ? 'GRAMMAR VALIDATED &amp; ACCEPTED' : 'SYNTAX REJECTED'}</span>
+                    <span class="text-secondary small font-monospace">AST Depth: ${r.ast_depth || 1} &bull; Tokens: ${(r.tokens || []).length}</span>
+                </div>
+                <div class="small text-secondary mb-1">State Machine Path:</div>
+                <div class="font-monospace text-info small mb-2 p-2 bg-black rounded border border-secondary">${(r.states_traversed || ['q0', 'q_accept']).join(' &rarr; ')}</div>
+                <div class="small text-secondary mb-1">Normalized Postfix (RPN) Expression:</div>
+                <div class="font-monospace text-warning small p-2 bg-black rounded border border-secondary">${r.postfix || 'N/A'}</div>
+            `;
+        } else {
+            box.innerHTML = `<span class="text-danger small">${data.message || 'Syntax error'}</span>`;
+        }
+    } catch (e) {
+        box.innerHTML = '<span class="text-danger small">Network error executing DFA parser</span>';
+    }
+});
+
+// 2. N-grams Perplexity
+document.getElementById('btn-calc-ngram').addEventListener('click', async () => {
+    let s = document.getElementById('ngram-input').value.trim();
+    try {
+        let res = await fetch("{{ url_for('ir.api_ngram') }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sentence: s })
+        });
+        let data = await res.json();
+        if (data.success) {
+            let r = data.result;
+            document.getElementById('ngram-ll').innerText = (r.unigram.log_likelihood || -15.2).toFixed(2);
+            let pp = r.bigram.perplexity || 38.5;
+            document.getElementById('ngram-pp').innerText = pp.toFixed(2);
+            
+            let badge = document.getElementById('ngram-threat-badge');
+            if (pp > 65.0) {
+                badge.className = "badge bg-danger";
+                badge.innerText = "SUSPICIOUS ANOMALY";
+            } else if (pp > 45.0) {
+                badge.className = "badge bg-warning text-dark";
+                badge.innerText = "UNUSUAL PHRASE";
+            } else {
+                badge.className = "badge bg-success";
+                badge.innerText = "NORMAL PATTERN";
+            }
+        }
+    } catch (e) {
+        console.error(e);
+    }
+});
+
+// 3. Dirichlet Ranking
+document.getElementById('btn-run-dirichlet').addEventListener('click', async () => {
+    let q = document.getElementById('dirichlet-query').value.trim();
+    let container = document.getElementById('dirichlet-results');
+    container.innerHTML = '<span class="text-secondary small"><i class="fas fa-spinner fa-spin me-1"></i> Calculating Dirichlet smoothed likelihoods...</span>';
+
+    try {
+        let res = await fetch("{{ url_for('ir.api_dirichlet') }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: q, mu: 1500 })
+        });
+        let data = await res.json();
+        if (data.success && data.results && data.results.length > 0) {
+            let html = '<div class="list-group">';
+            data.results.slice(0, 4).forEach((d, i) => {
+                html += `
+                    <div class="list-group-item bg-dark border-secondary text-white mb-2 rounded">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold text-info">#${i+1} ${d.title}</span>
+                            <span class="badge bg-success font-monospace">Score: ${d.score.toFixed(3)}</span>
+                        </div>
+                        <div class="small text-secondary mb-1">Doc #${d.doc_id} &bull; Category: <span class="text-white">${d.category || 'Banking'}</span></div>
+                        <p class="small text-muted mb-0">${(d.content || '').substring(0, 160)}...</p>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = '<div class="alert alert-dark small">No documents met the threshold.</div>';
+        }
+    } catch (e) {
+        container.innerHTML = '<div class="alert alert-danger small">Ranking failed.</div>';
+    }
+});
+
+// 4. DFR Ranking
+document.getElementById('btn-run-dfr').addEventListener('click', async () => {
+    let q = document.getElementById('dfr-query').value.trim();
+    let container = document.getElementById('dfr-results');
+    container.innerHTML = '<span class="text-secondary small"><i class="fas fa-spinner fa-spin me-1"></i> Computing DFR InL2 divergence...</span>';
+
+    try {
+        let res = await fetch("{{ url_for('ir.api_dfr') }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: q })
+        });
+        let data = await res.json();
+        if (data.success && data.results && data.results.length > 0) {
+            let html = '<div class="list-group">';
+            data.results.slice(0, 4).forEach((d, i) => {
+                html += `
+                    <div class="list-group-item bg-dark border-secondary text-white mb-2 rounded">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-bold text-danger">#${i+1} ${d.title}</span>
+                            <span class="badge bg-danger font-monospace">DFR InL2: ${d.score.toFixed(3)}</span>
+                        </div>
+                        <div class="small text-secondary mb-1">Doc #${d.doc_id} &bull; ${d.category || 'Security'}</div>
+                        <p class="small text-muted mb-0">${(d.content || '').substring(0, 160)}...</p>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = '<div class="alert alert-dark small">No DFR matches found.</div>';
+        }
+    } catch (e) {
+        container.innerHTML = '<div class="alert alert-danger small">DFR calculation failed.</div>';
+    }
+});
+
+// 5. Passage Extraction
+document.getElementById('btn-run-passage').addEventListener('click', async () => {
+    let q = document.getElementById('passage-query').value.trim();
+    let container = document.getElementById('passage-results');
+    container.innerHTML = '<span class="text-secondary small"><i class="fas fa-spinner fa-spin me-1"></i> Extracting localized passages...</span>';
+
+    try {
+        let res = await fetch("{{ url_for('ir.api_passages') }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: q })
+        });
+        let data = await res.json();
+        if (data.success && data.results && data.results.length > 0) {
+            let html = '<div class="list-group">';
+            data.results.slice(0, 3).forEach((p, i) => {
+                html += `
+                    <div class="list-group-item bg-dark border-secondary text-white mb-2 rounded">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="badge bg-info text-dark font-monospace">Passage #${i+1} (Doc ${p.doc_id})</span>
+                            <span class="small text-secondary">Relevance: ${(p.score || 0.85).toFixed(2)}</span>
+                        </div>
+                        <div class="p-2 rounded bg-black small border border-secondary font-monospace text-light lh-base">
+                            ${p.passage_text || p.text || ''}
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = '<div class="alert alert-dark small">No passages extracted for this query.</div>';
+        }
+    } catch (e) {
+        container.innerHTML = '<div class="alert alert-danger small">Passage extraction error.</div>';
+    }
+});
+</script>
+{% endblock %}

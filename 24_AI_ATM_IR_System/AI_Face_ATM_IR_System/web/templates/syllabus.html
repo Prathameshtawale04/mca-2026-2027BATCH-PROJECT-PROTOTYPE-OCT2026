@@ -1,0 +1,350 @@
+{% extends "base.html" %}
+
+{% block title %}Curriculum & Syllabus Coverage | Mira AI ATM & IR System{% endblock %}
+{% block page_title %}Academic Syllabus & Curriculum Implementation Coverage{% endblock %}
+
+{% block content %}
+<div class="card-custom mb-4">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h2 style="font-size: 1.35rem; font-weight: 700; color: #ffffff; margin: 0;">Units IV, V & VI Information Retrieval & Biometric Security Syllabus</h2>
+            <p style="font-size: 0.84rem; color: var(--text-muted); margin-top: 4px; max-width: 800px;">
+                Demonstrating 100% executable implementation of required topics across Advanced Information Retrieval (Units IV, V, VI), Multi-Factor Biometric Anti-Spoofing, and the Intelligent Hybrid Search Engine.
+            </p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <span class="badge-custom badge-success" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
+                <i class="fas fa-circle-check"></i> Units IV &bull; V &bull; VI Active
+            </span>
+            <span class="badge-custom badge-info" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
+                <i class="fas fa-shield-halved"></i> Biometric Anti-Spoofing Active
+            </span>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th style="width: 140px;">Domain / Unit</th>
+                    <th>Curriculum Topic & Description</th>
+                    <th style="width: 260px;">Executable Source File</th>
+                    <th style="width: 90px; text-align: center;">View</th>
+                    <th style="width: 110px; text-align: center;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Biometric ATM Security & Anti-Spoofing -->
+                <tr style="background: rgba(59, 130, 246, 0.08);">
+                    <td colspan="5" style="font-weight: 700; color: #38bdf8; font-size: 0.92rem; padding: 12px 16px;">
+                        <i class="fas fa-shield-halved"></i> BIOMETRIC ATM SECURITY, LIVENESS & FINANCIAL CORE
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>ATM Core</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Haar Cascades Frontal Face Detection</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Real-time OpenCV cascade classifier with minNeighbors and scaleFactor tuning</div>
+                    </td>
+                    <td><code>face_atm/face_detector.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('face_auth') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>ATM Core</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">LBPH Local Binary Patterns Histograms Face Recognition</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Radius-1, 8-neighbors spatial texture matching with calibrated distance threshold &le; 65.0</div>
+                    </td>
+                    <td><code>face_atm/face_recognizer.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('face_auth') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>ATM Core</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Multi-Factor Optical Anti-Spoofing & Liveness Analysis</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Laplacian high-frequency texture variance (&ge;45), YCrCb skin chrominance (&ge;30%), and specular reflection analysis</div>
+                    </td>
+                    <td><code>face_atm/anti_spoofing.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('face_auth') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>ATM Core</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Salted PBKDF2 PIN Cryptography & Brute-Force Lockout</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">100,000 SHA-256 iterations with 3 consecutive incorrect attempts automatic account lockout</div>
+                    </td>
+                    <td><code>face_atm/security_service.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('atm_terminal') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>ATM Core</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">ACID Banking Ledger & Dispenser Denominations</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Atomic balance updates, transaction rollbacks, tactile sound synthesis, and cash bill breakdown ($100, $50, $20)</div>
+                    </td>
+                    <td><code>face_atm/atm_service.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('atm_terminal') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+
+                <!-- Unit IV: Language Models for Information Retrieval -->
+                <tr style="background: rgba(236, 72, 153, 0.08);">
+                    <td colspan="5" style="font-weight: 700; color: #f472b6; font-size: 0.92rem; padding: 12px 16px;">
+                        <i class="fas fa-brain"></i> UNIT IV: LANGUAGE MODELS FOR INFORMATION RETRIEVAL
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Unit IV</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Deterministic Finite Automata (DFA) Query Processor</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">State-machine parsing of complex Boolean expressions with AND, OR, NOT operator precedence</div>
+                    </td>
+                    <td><code>language_models/query_automaton.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('language_models_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Unit IV</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">N-gram Statistical Language Models & Perplexity</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Unigram, Bigram, and Trigram maximum-likelihood estimators with Laplace add-1 smoothing and cross-entropy evaluation</div>
+                    </td>
+                    <td><code>language_models/ngram_models.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('language_models_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Unit IV</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Multinomial Probability Distribution</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Multinomial document generation probability under bag-of-words assumptions and frequency distributions</div>
+                    </td>
+                    <td><code>language_models/multinomial_model.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('language_models_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Unit IV</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Query Likelihood Model with Smoothing</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Jelinek-Mercer linear interpolation (&lambda;) and Bayesian Dirichlet prior (&mu;) smoothing to eliminate zero-probability terms</div>
+                    </td>
+                    <td><code>language_models/lm_ranker.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('language_models_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Unit IV</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Divergence From Randomness (DFR InL2 Model)</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Probabilistic randomness deviation measuring information content of query terms against noise distributions</div>
+                    </td>
+                    <td><code>language_models/dfr_ranker.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('language_models_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Unit IV</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Passage Retrieval & Window Highlighting</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Sliding window segmentation with sentence boundary preservation and BM25 local passage scoring</div>
+                    </td>
+                    <td><code>language_models/passage_retriever.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('language_models_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Unit IV</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Information Retrieval Evaluation Metrics</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Precision, Recall, F1-Score, Precision@K, and Mean Average Precision (MAP) over ranked result sets</div>
+                    </td>
+                    <td><code>language_models/ir_metrics.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('language_models_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+
+                <!-- Unit V: Web Retrieval, Distributed Systems & Web Crawling -->
+                <tr style="background: rgba(14, 165, 233, 0.08);">
+                    <td colspan="5" style="font-weight: 700; color: #38bdf8; font-size: 0.92rem; padding: 12px 16px;">
+                        <i class="fas fa-globe"></i> UNIT V: WEB RETRIEVAL, DISTRIBUTED SYSTEMS & WEB CRAWLING
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Unit V</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Parallel Query Processing & Multithreading</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Thread pool executor with concurrent search shard fan-out, barrier synchronization, and latency metrics</div>
+                    </td>
+                    <td><code>web_retrieval/parallel_query.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('web_retrieval_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Unit V</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">MapReduce Inverted Index Construction</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Distributed Map phase (emit word &rarr; (doc_id, tf)), Shuffle/Sort, and Reduce phase (merge into inverted index)</div>
+                    </td>
+                    <td><code>web_retrieval/mapreduce_engine.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('web_retrieval_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Unit V</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Mini Search Engine Core Architecture</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">End-to-end index ingestion, document tokenization, multi-field inverted index, and snippet generation</div>
+                    </td>
+                    <td><code>web_retrieval/search_engine.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('web_retrieval_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Unit V</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Cluster-Based Search with Centroid Pruning</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Document collection partition into semantic clusters, routing queries solely to the top-K relevant cluster centroids</div>
+                    </td>
+                    <td><code>web_retrieval/cluster_search.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('web_retrieval_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Unit V</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Distributed Multi-Node Query Coordinator</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Partition-by-document sharding, master-worker query dispatch, and top-K result aggregation</div>
+                    </td>
+                    <td><code>web_retrieval/distributed_search.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('web_retrieval_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Unit V</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Link-Based Graph Structure & In/Out Degree</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Adjacency list web graph modeling with incoming/outgoing link analysis and authority hubs</div>
+                    </td>
+                    <td><code>web_retrieval/link_rank.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('web_retrieval_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Unit V</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">PageRank Algorithm (Power Iteration & Random Walk)</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Markov chain stationary probability distribution with damping factor d=0.85 and teleportation handling</div>
+                    </td>
+                    <td><code>web_retrieval/pagerank.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('web_retrieval_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Unit V</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Cross-Algorithm Ranking Comparison</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Direct head-to-head comparison of VSM Cosine, Language Model, DFR InL2, and PageRank ordering</div>
+                    </td>
+                    <td><code>web_retrieval/ranking_comparison.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('web_retrieval_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Unit V</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Polite Web Crawler & Scrapy Spiders</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Domain rate-limiting, robots.txt compliance, URL frontier with BFS/DFS traversal, and HTML extraction</div>
+                    </td>
+                    <td><code>web_retrieval/beautifulsoup_crawler.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('web_retrieval_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+
+                <!-- Unit VI: Information Retrieval Applications & Semantic Web -->
+                <tr style="background: rgba(168, 85, 247, 0.08);">
+                    <td colspan="5" style="font-weight: 700; color: #c084fc; font-size: 0.92rem; padding: 12px 16px;">
+                        <i class="fas fa-diagram-project"></i> UNIT VI: INFORMATION RETRIEVAL APPLICATIONS & SEMANTIC WEB
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Unit VI</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">User-Item Collaborative Filtering</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">User-based and item-based k-nearest neighbor collaborative filtering using Pearson correlation and Cosine similarity</div>
+                    </td>
+                    <td><code>ir_applications/collaborative_filter.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('ir_applications_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Unit VI</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Content-Based Recommendation Engine</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Item profile vectorization via TF-IDF, user profile preference synthesis, and cosine affinity ranking</div>
+                    </td>
+                    <td><code>ir_applications/content_recommender.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('ir_applications_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Unit VI</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Knowledge-Based Rule Recommender</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Constraint satisfaction and heuristic rule evaluation matching user financial profiles to products</div>
+                    </td>
+                    <td><code>ir_applications/knowledge_recommender.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('ir_applications_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Unit VI</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Information Extraction & Named Entity Recognition</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Regex and rule-based entity extraction for financial terms, amounts, dates, and relationship tuples</div>
+                    </td>
+                    <td><code>ir_applications/text_extractor.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('ir_applications_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Unit VI</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Semantic Web Knowledge Graph (RDF Triples)</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Subject-Predicate-Object triples, entity relationship graph visualization, and multi-hop SPARQL-style querying</div>
+                    </td>
+                    <td><code>ir_applications/knowledge_graph.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('ir_applications_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Unit VI</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #ffffff;">Question Answering & Information Integration Pipeline</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Specialized pipeline integrating financial documents, extracted knowledge triples, and ranked answer selection</div>
+                    </td>
+                    <td><code>ir_applications/integration_pipeline.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('ir_applications_page') }}" class="btn-custom btn-outline-custom" style="padding: 3px 10px; font-size: 0.75rem;">View</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+
+                <!-- Capstone Unified Hybrid Search -->
+                <tr style="background: rgba(0, 245, 212, 0.08);">
+                    <td><strong>Capstone</strong></td>
+                    <td>
+                        <div style="font-weight: 600; color: #00f5d4;">Unified Multi-Algorithm Hybrid IR Search Engine</div>
+                        <div style="font-size: 0.76rem; color: var(--text-muted);">Linear score fusion combining Okapi BM25, Vector Space Model (VSM), Language Model Query Likelihood, and PageRank link authority</div>
+                    </td>
+                    <td><code>integrated_search/hybrid_search.py</code></td>
+                    <td style="text-align: center;"><a href="{{ url_for('search_page') }}" class="btn-custom btn-primary-custom" style="padding: 3px 10px; font-size: 0.75rem;">Search</a></td>
+                    <td style="text-align: center;"><span class="badge-custom badge-success">&check; Active</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

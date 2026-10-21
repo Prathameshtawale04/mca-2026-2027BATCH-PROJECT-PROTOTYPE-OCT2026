@@ -1,0 +1,562 @@
+{% extends "base.html" %}
+
+{% block title %}Executive Banking Dashboard | Mira AI ATM{% endblock %}
+{% block page_title %}Mira AI Executive Dashboard & Research Hub{% endblock %}
+
+{% block content %}
+<!-- Executive Financial & Security Telemetry Header -->
+<div class="row g-3 mb-4">
+    <!-- Balance & Account Status Card -->
+    <div class="col-lg-4 col-md-6">
+        <div class="card-custom" style="background: linear-gradient(135deg, rgba(30, 58, 138, 0.4), rgba(15, 23, 42, 0.95)); border-color: rgba(56, 189, 248, 0.35); position: relative; overflow: hidden;">
+            <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(0, 245, 212, 0.15), transparent 70%); border-radius: 50%;"></div>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                <div>
+                    <span style="font-size: 0.75rem; font-weight: 700; color: #93c5fd; text-transform: uppercase; letter-spacing: 0.08em;">TOTAL CHECKING BALANCE</span>
+                    <h2 id="userBalanceDisplay" style="font-size: 2.3rem; font-weight: 800; color: #ffffff; margin-top: 0.25rem; font-family: 'JetBrains Mono', monospace;">
+                        ${{ "%.2f"|format(user.balance) }}
+                    </h2>
+                </div>
+                <div style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); padding: 10px 14px; border-radius: 10px; text-align: center;">
+                    <i class="fas fa-wallet" style="font-size: 1.4rem; color: #38bdf8;"></i>
+                </div>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: #bfdbfe; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 0.75rem;">
+                <span>Account: <code style="color: #38bdf8;">{{ user.account_number }}</code></span>
+                <span id="accountStatusBadge" class="badge-custom {% if user.status == 'ACTIVE' %}badge-success{% else %}badge-danger{% endif %}">
+                    <i class="fas {% if user.status == 'ACTIVE' %}fa-shield-check{% else %}fa-lock{% endif %}"></i> {{ user.status }}
+                </span>
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-top: 12px;">
+                <a href="{{ url_for('atm_terminal') }}" class="btn-custom btn-primary-custom" style="flex: 1; text-align: center; font-size: 0.82rem; padding: 6px 10px;">
+                    <i class="fas fa-money-bill-transfer"></i> ATM Cash Terminal
+                </a>
+                <button id="freezeToggleBtn" onclick="toggleCardFreeze()" class="btn-custom {% if user.status == 'ACTIVE' %}btn-danger-custom{% else %}btn-success-custom{% endif %}" style="font-size: 0.82rem; padding: 6px 12px;">
+                    <i class="fas {% if user.status == 'ACTIVE' %}fa-snowflake{% else %}fa-unlock{% endif %}"></i>
+                    <span id="freezeToggleText">{% if user.status == 'ACTIVE' %}Freeze{% else %}Unfreeze{% endif %}</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biometric & Anti-Spoofing Security Card -->
+    <div class="col-lg-4 col-md-6">
+        <div class="card-custom" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="font-size: 0.75rem; font-weight: 700; color: #34d399; text-transform: uppercase; letter-spacing: 0.08em;">BIOMETRIC TELEMETRY</span>
+                    <span class="badge-custom badge-success" style="font-size: 0.7rem;"><i class="fas fa-check-circle"></i> LBPH Active</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px; margin-top: 6px;">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; color: #10b981; font-size: 1.3rem;">
+                        <i class="fas fa-fingerprint"></i>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 1rem; font-weight: 700; margin: 0; color: #ffffff;">Haar + LBPH Model</h4>
+                        <p style="font-size: 0.76rem; color: var(--text-muted); margin: 2px 0 0 0;">Laplacian Liveness Variance &bull; PBKDF2 Salted PIN</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid var(--card-border); border-radius: 8px; padding: 8px 12px; margin-top: 10px; font-size: 0.76rem; display: flex; justify-content: space-between; align-items: center;">
+                <span>Daily Limit: <strong>${{ "%.2f"|format(user.daily_limit) }}</strong></span>
+                <a href="{{ url_for('face_auth') }}" style="color: var(--text-accent); text-decoration: none; font-weight: 600;">
+                    Liveness Check &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 50/30/20 Smart Financial Intelligence Card -->
+    <div class="col-lg-4 col-md-12">
+        <div class="card-custom" style="display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.75rem; font-weight: 700; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.08em;">50/30/20 WEALTH ALLOCATION</span>
+                    <span class="badge-custom badge-info" style="font-size: 0.7rem;">4.25% APY Vault</span>
+                </div>
+                
+                <!-- Visual Tri-color Progress Bar -->
+                <div class="budget-visualizer" title="50% Needs, 30% Wants, 20% Wealth">
+                    <div class="budget-bar-needs" style="width: 50%;" title="Needs (50%)"></div>
+                    <div class="budget-bar-wants" style="width: 30%;" title="Wants (30%)"></div>
+                    <div class="budget-bar-savings" style="width: 20%;" title="Savings & Wealth (20%)"></div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; text-align: center; font-size: 0.72rem;">
+                    <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 6px; padding: 4px;">
+                        <span style="color: #60a5fa; display: block; font-weight: 700;">Needs 50%</span>
+                        <span id="allocNeeds" style="font-weight: 600;">${{ "%.2f"|format(user.balance * 0.50) }}</span>
+                    </div>
+                    <div style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 6px; padding: 4px;">
+                        <span style="color: #c084fc; display: block; font-weight: 700;">Wants 30%</span>
+                        <span id="allocWants" style="font-weight: 600;">${{ "%.2f"|format(user.balance * 0.30) }}</span>
+                    </div>
+                    <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 6px; padding: 4px;">
+                        <span style="color: #34d399; display: block; font-weight: 700;">Wealth 20%</span>
+                        <span id="allocWealth" style="font-weight: 600;">${{ "%.2f"|format(user.balance * 0.20) }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 10px; display: flex; justify-content: space-between;">
+                <span>Estimated Interest: <strong style="color: #34d399;">~${{ "%.2f"|format(user.balance * 0.0425) }}/yr</strong></span>
+                <span style="color: #38bdf8; cursor: pointer;" onclick="sendMiraPrompt('Recommend savings allocation for my balance')"><i class="fas fa-sparkles"></i> Ask Copilot</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Interactive Hub Grid -->
+<div class="row g-3">
+    <!-- Left Column: Mira AI Copilot & Savings Goals & Ledger -->
+    <div class="col-lg-7">
+        <!-- Mira AI Conversational Copilot Card -->
+        <div class="mira-chat-card mb-4">
+            <div class="mira-chat-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #00f5d4, #38bdf8); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 10px rgba(0, 245, 212, 0.5);">
+                        <i class="fas fa-robot" style="color: #050811; font-size: 0.9rem;"></i>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.88rem; font-weight: 700; color: #ffffff;">Mira AI Financial Copilot</span>
+                        <span style="font-size: 0.7rem; color: #38bdf8; display: block; line-height: 1.1;"><i class="fas fa-bolt"></i> RAG-Enhanced &bull; Online</span>
+                    </div>
+                </div>
+                <div>
+                    <span class="badge-custom badge-info" style="font-size: 0.68rem;">v2.4 Core</span>
+                </div>
+            </div>
+
+            <!-- Messages Stream -->
+            <div id="miraChatMessages" class="mira-chat-messages">
+                <!-- Mira Welcome Bubble -->
+                <div class="chat-bubble-mira">
+                    <p style="margin: 0 0 8px 0; font-weight: 600; color: #00f5d4;">
+                        <i class="fas fa-sparkles"></i> Hello {{ user.full_name }}! I am Mira, your intelligent biometric ATM copilot.
+                    </p>
+                    <p style="margin: 0; font-size: 0.82rem; color: #e2e8f0;">
+                        How can I assist your financial workflow today? You can inquire about your limits, trigger card lockouts, analyze 50/30/20 budgets, or consult our Information Retrieval knowledge base.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Quick Action Suggestion Chips -->
+            <div style="padding: 6px 14px; background: rgba(15, 23, 42, 0.7); border-top: 1px solid rgba(255, 255, 255, 0.05); display: flex; gap: 6px; overflow-x: auto; white-space: nowrap;">
+                <span class="quick-action-pill" onclick="sendMiraPrompt('What is my account balance and status?')">
+                    <i class="fas fa-wallet"></i> Check Balance
+                </span>
+                <span class="quick-action-pill" onclick="sendMiraPrompt('What are my daily withdrawal limits?')">
+                    <i class="fas fa-credit-card"></i> Check Limits
+                </span>
+                <span class="quick-action-pill" onclick="sendMiraPrompt('Explain my 50/30/20 savings breakdown')">
+                    <i class="fas fa-chart-pie"></i> 50/30/20 Advice
+                </span>
+                <span class="quick-action-pill" onclick="sendMiraPrompt('Verify my biometric security and anti-spoofing score')">
+                    <i class="fas fa-fingerprint"></i> Biometric Status
+                </span>
+                <span class="quick-action-pill danger-pill" onclick="sendMiraPrompt('Freeze my card immediately')">
+                    <i class="fas fa-snowflake"></i> Freeze Card
+                </span>
+            </div>
+
+            <!-- Input Bar -->
+            <div class="mira-chat-input-bar">
+                <input type="text" id="miraInput" class="form-control-custom" placeholder="Ask Mira anything about your account, ATM operations, or IR engines..." style="font-size: 0.84rem; padding: 8px 12px;" onkeydown="if(event.key === 'Enter') submitMiraMessage()">
+                <button class="btn-custom btn-primary-custom" onclick="submitMiraMessage()" style="padding: 8px 16px;">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Savings Goals Card -->
+        <div class="card-custom mb-4">
+            <div class="card-title-custom">
+                <span><i class="fas fa-piggy-bank text-success"></i> Smart Savings Vaults</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Auto-Roundup Active</span>
+            </div>
+            
+            <div class="row g-3" id="savingsGoalsContainer">
+                <!-- Goal 1 -->
+                <div class="col-md-4">
+                    <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--card-border); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                                <span style="font-weight: 700; font-size: 0.82rem; color: #ffffff;">Emergency Cushion</span>
+                                <span class="badge-custom badge-success" style="font-size: 0.65rem;">Priority</span>
+                            </div>
+                            <div style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 8px;">Target: $5,000.00</div>
+                            <div style="background: rgba(255, 255, 255, 0.08); border-radius: 4px; height: 6px; overflow: hidden; margin-bottom: 6px;">
+                                <div id="goalProgress1" style="background: #10b981; height: 100%; width: 37%;"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #e2e8f0;">
+                                <span id="goalVal1">$1,850.00</span>
+                                <span>37%</span>
+                            </div>
+                        </div>
+                        <button onclick="contributeToGoal('goal_1', 50, 'goalVal1', 'goalProgress1', 5000)" class="btn-custom btn-outline-custom" style="width: 100%; font-size: 0.74rem; padding: 4px 8px; margin-top: 10px;">
+                            + Deposit $50
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Goal 2 -->
+                <div class="col-md-4">
+                    <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--card-border); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                                <span style="font-weight: 700; font-size: 0.82rem; color: #ffffff;">Vacation Fund</span>
+                                <span class="badge-custom badge-info" style="font-size: 0.65rem;">Lifestyle</span>
+                            </div>
+                            <div style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 8px;">Target: $2,500.00</div>
+                            <div style="background: rgba(255, 255, 255, 0.08); border-radius: 4px; height: 6px; overflow: hidden; margin-bottom: 6px;">
+                                <div id="goalProgress2" style="background: #38bdf8; height: 100%; width: 36.8%;"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #e2e8f0;">
+                                <span id="goalVal2">$920.00</span>
+                                <span>36.8%</span>
+                            </div>
+                        </div>
+                        <button onclick="contributeToGoal('goal_2', 25, 'goalVal2', 'goalProgress2', 2500)" class="btn-custom btn-outline-custom" style="width: 100%; font-size: 0.74rem; padding: 4px 8px; margin-top: 10px;">
+                            + Deposit $25
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Goal 3 -->
+                <div class="col-md-4">
+                    <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--card-border); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                                <span style="font-weight: 700; font-size: 0.82rem; color: #ffffff;">Tech Investment</span>
+                                <span class="badge-custom badge-warning" style="font-size: 0.65rem;">Wealth</span>
+                            </div>
+                            <div style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 8px;">Target: $3,500.00</div>
+                            <div style="background: rgba(255, 255, 255, 0.08); border-radius: 4px; height: 6px; overflow: hidden; margin-bottom: 6px;">
+                                <div id="goalProgress3" style="background: #f59e0b; height: 100%; width: 40%;"></div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #e2e8f0;">
+                                <span id="goalVal3">$1,400.00</span>
+                                <span>40%</span>
+                            </div>
+                        </div>
+                        <button onclick="contributeToGoal('goal_3', 100, 'goalVal3', 'goalProgress3', 3500)" class="btn-custom btn-outline-custom" style="width: 100%; font-size: 0.74rem; padding: 4px 8px; margin-top: 10px;">
+                            + Deposit $100
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transactions Table -->
+        <div class="card-custom">
+            <div class="card-title-custom">
+                <span><i class="fas fa-list-check text-info"></i> Recent Ledger Transactions</span>
+                <a href="{{ url_for('atm_terminal') }}" style="font-size: 0.82rem; color: var(--text-accent); text-decoration: none;">Launch ATM &rarr;</a>
+            </div>
+            {% if recent_tx %}
+            <div class="table-responsive">
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Balance After</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tx in recent_tx %}
+                        <tr>
+                            <td>
+                                {% if tx.type == 'DEPOSIT' %}
+                                <span class="badge-custom badge-success"><i class="fas fa-arrow-down"></i> Deposit</span>
+                                {% else %}
+                                <span class="badge-custom badge-warning"><i class="fas fa-arrow-up"></i> Withdrawal</span>
+                                {% endif %}
+                            </td>
+                            <td style="font-weight: 700; font-family: 'JetBrains Mono', monospace;">${{ "%.2f"|format(tx.amount) }}</td>
+                            <td style="font-family: 'JetBrains Mono', monospace;">${{ "%.2f"|format(tx.balance_after) }}</td>
+                            <td style="color: var(--text-muted); font-size: 0.78rem;">{{ tx.timestamp }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p style="color: var(--text-muted); font-size: 0.88rem; margin: 10px 0;">No transactions recorded yet in this account session.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Column: Curriculum Hub Units 4, 5, 6 & Security Logs -->
+    <div class="col-lg-5">
+        <!-- Academic IR Curriculum Hub (Units 4, 5, 6) -->
+        <div class="card-custom mb-4">
+            <div class="card-title-custom">
+                <span><i class="fas fa-graduation-cap text-warning"></i> Academic IR Syllabus Hub</span>
+                <span class="badge-custom badge-info" style="font-size: 0.7rem;">Units IV &bull; V &bull; VI</span>
+            </div>
+            
+            <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px;">
+                Direct access to Information Retrieval algorithms, language modeling, distributed indexing, and semantic recommender engines:
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- Unit IV -->
+                <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 38px; height: 38px; border-radius: 8px; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; color: #38bdf8;">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.86rem; font-weight: 700; color: #ffffff;">Unit IV: Language Models</div>
+                            <div style="font-size: 0.74rem; color: var(--text-muted);">Unigram/Bigram &bull; Jelinek-Mercer &bull; Dirichlet &bull; DFR</div>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('language_models_page') }}" class="btn-custom btn-outline-custom" style="padding: 4px 10px; font-size: 0.75rem;">
+                        Open &rarr;
+                    </a>
+                </div>
+
+                <!-- Unit V -->
+                <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(0, 245, 212, 0.25); border-radius: 10px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 38px; height: 38px; border-radius: 8px; background: rgba(0, 245, 212, 0.15); display: flex; align-items: center; justify-content: center; color: #00f5d4;">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.86rem; font-weight: 700; color: #ffffff;">Unit V: Web Retrieval</div>
+                            <div style="font-size: 0.74rem; color: var(--text-muted);">Web Crawler &bull; PageRank &bull; MapReduce Inverted Index</div>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('web_retrieval_page') }}" class="btn-custom btn-outline-custom" style="padding: 4px 10px; font-size: 0.75rem;">
+                        Open &rarr;
+                    </a>
+                </div>
+
+                <!-- Unit VI -->
+                <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(167, 139, 250, 0.25); border-radius: 10px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 38px; height: 38px; border-radius: 8px; background: rgba(167, 139, 250, 0.15); display: flex; align-items: center; justify-content: center; color: #a78bfa;">
+                            <i class="fas fa-diagram-project"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.86rem; font-weight: 700; color: #ffffff;">Unit VI: IR Applications</div>
+                            <div style="font-size: 0.74rem; color: var(--text-muted);">Collaborative Filtering &bull; Recommenders &bull; Knowledge Graph</div>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('ir_applications_page') }}" class="btn-custom btn-outline-custom" style="padding: 4px 10px; font-size: 0.75rem;">
+                        Open &rarr;
+                    </a>
+                </div>
+
+                <!-- Capstone Hybrid Search -->
+                <div style="background: rgba(30, 58, 138, 0.2); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 10px; padding: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div style="width: 38px; height: 38px; border-radius: 8px; background: rgba(56, 189, 248, 0.2); display: flex; align-items: center; justify-content: center; color: #38bdf8;">
+                            <i class="fas fa-magnifying-glass-chart"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.86rem; font-weight: 700; color: #ffffff;">Intelligent Hybrid Search</div>
+                            <div style="font-size: 0.74rem; color: #93c5fd;">Multi-Model Score Fusion (BM25 + VSM + LM + PageRank)</div>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('search_page') }}" class="btn-custom btn-primary-custom" style="padding: 4px 10px; font-size: 0.75rem;">
+                        Search &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Audit Trail -->
+        <div class="card-custom">
+            <div class="card-title-custom">
+                <span><i class="fas fa-shield-alt text-success"></i> Real-Time Audit Telemetry</span>
+            </div>
+            {% if recent_logs %}
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                {% for log in recent_logs %}
+                <div style="padding: 8px 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--card-border); border-radius: 8px; font-size: 0.78rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                        <span style="font-weight: 700; color: var(--text-accent);">{{ log.event_type }}</span>
+                        <span style="color: var(--text-muted); font-size: 0.7rem;">{{ log.timestamp }}</span>
+                    </div>
+                    <div style="color: var(--text-main); font-size: 0.75rem;">{{ log.details }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p style="color: var(--text-muted); font-size: 0.88rem;">No recent security incidents logged.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Dynamic Audio Synthesis & AJAX Scripts -->
+<script>
+// Web Audio API Beep Generator for Interactive Feedback
+const audioCtx = (window.AudioContext || window.webkitAudioContext) ? new (window.AudioContext || window.webkitAudioContext)() : null;
+
+function playPing(freq = 660, duration = 0.08) {
+    if (!audioCtx) return;
+    try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    } catch(e) {}
+}
+
+// Mira AI Chat Interaction
+function sendMiraPrompt(text) {
+    document.getElementById('miraInput').value = text;
+    submitMiraMessage();
+}
+
+function submitMiraMessage() {
+    const input = document.getElementById('miraInput');
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    playPing(580, 0.06);
+    const container = document.getElementById('miraChatMessages');
+
+    // Append User Bubble
+    const userBubble = document.createElement('div');
+    userBubble.className = 'chat-bubble-user';
+    userBubble.textContent = msg;
+    container.appendChild(userBubble);
+    input.value = '';
+    container.scrollTop = container.scrollHeight;
+
+    // Append Mira Typing Indicator
+    const typingBubble = document.createElement('div');
+    typingBubble.className = 'chat-bubble-mira';
+    typingBubble.id = 'miraTyping';
+    typingBubble.innerHTML = '<i class="fas fa-spinner fa-spin text-info"></i> Mira is retrieving financial context...';
+    container.appendChild(typingBubble);
+    container.scrollTop = container.scrollHeight;
+
+    // AJAX Call to Mira Copilot API
+    fetch('/api/mira/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg })
+    })
+    .then(res => res.json())
+    .then(data => {
+        const typingEl = document.getElementById('miraTyping');
+        if (typingEl) typingEl.remove();
+
+        const miraBubble = document.createElement('div');
+        miraBubble.className = 'chat-bubble-mira';
+        
+        let formattedReply = (data.reply || 'Request processed.')
+            .replace(/\n\n/g, '<br><br>')
+            .replace(/\n/g, '<br>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+        let actionsHtml = '';
+        if (data.quick_actions && data.quick_actions.length > 0) {
+            actionsHtml = '<div style="margin-top: 8px; display: flex; flex-wrap: wrap; gap: 4px;">' +
+                data.quick_actions.map(a => `<span class="quick-action-pill" onclick="sendMiraPrompt('${a.action}')">${a.title}</span>`).join('') +
+                '</div>';
+        }
+
+        miraBubble.innerHTML = formattedReply + actionsHtml;
+        container.appendChild(miraBubble);
+        playPing(880, 0.1);
+        container.scrollTop = container.scrollHeight;
+    })
+    .catch(err => {
+        const typingEl = document.getElementById('miraTyping');
+        if (typingEl) typingEl.remove();
+
+        const miraBubble = document.createElement('div');
+        miraBubble.className = 'chat-bubble-mira';
+        miraBubble.innerHTML = '<span style="color: #f87171;"><i class="fas fa-exclamation-triangle"></i> Network connection error while communicating with Mira AI.</span>';
+        container.appendChild(miraBubble);
+    });
+}
+
+// One-Click Savings Contribution
+function contributeToGoal(goalId, amount, valElId, progElId, target) {
+    playPing(750, 0.08);
+    fetch('/api/savings/deposit_goal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ goal_id: goalId, amount: amount })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success && data.goal) {
+            const current = data.goal.current;
+            const pct = Math.min(100, (current / target * 100)).toFixed(1);
+            document.getElementById(valElId).textContent = `$${current.toFixed(2)}`;
+            document.getElementById(progElId).style.width = `${pct}%`;
+            
+            // Add positive feedback in chat
+            const container = document.getElementById('miraChatMessages');
+            const alertBubble = document.createElement('div');
+            alertBubble.className = 'chat-bubble-mira';
+            alertBubble.innerHTML = `<span style="color: #34d399;"><i class="fas fa-check-circle"></i> Successfully deposited $${amount.toFixed(2)} into <strong>${data.goal.title}</strong>! Progress updated to ${pct}%.</span>`;
+            container.appendChild(alertBubble);
+            container.scrollTop = container.scrollHeight;
+        } else {
+            alert(data.message || 'Deposit failed');
+        }
+    })
+    .catch(e => console.error(e));
+}
+
+// Card Lockout / Freeze Toggle
+function toggleCardFreeze() {
+    playPing(440, 0.1);
+    fetch('/api/account/toggle_freeze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const isFrozen = (data.status === 'FROZEN');
+            const badge = document.getElementById('accountStatusBadge');
+            const btn = document.getElementById('freezeToggleBtn');
+            const btnText = document.getElementById('freezeToggleText');
+
+            if (isFrozen) {
+                badge.className = 'badge-custom badge-danger';
+                badge.innerHTML = '<i class="fas fa-lock"></i> FROZEN';
+                btn.className = 'btn-custom btn-success-custom';
+                btnText.textContent = 'Unfreeze';
+            } else {
+                badge.className = 'badge-custom badge-success';
+                badge.innerHTML = '<i class="fas fa-shield-check"></i> ACTIVE';
+                btn.className = 'btn-custom btn-danger-custom';
+                btnText.textContent = 'Freeze';
+            }
+
+            // Append status notification in Mira chat
+            const container = document.getElementById('miraChatMessages');
+            const alertBubble = document.createElement('div');
+            alertBubble.className = 'chat-bubble-mira';
+            alertBubble.innerHTML = `<i class="fas fa-shield-halved"></i> <strong>Security Alert:</strong> ${data.message}`;
+            container.appendChild(alertBubble);
+            container.scrollTop = container.scrollHeight;
+        }
+    })
+    .catch(e => console.error(e));
+}
+</script>
+{% endblock %}

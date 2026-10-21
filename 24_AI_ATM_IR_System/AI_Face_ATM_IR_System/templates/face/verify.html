@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block title %}Face Verification &bull; Biometric ATM Security{% endblock %}
+{% block breadcrumb %}Biometrics &bull; Face Verification{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1 text-white"><i class="fas fa-user-check text-success me-2"></i>Live Biometric Verification</h4>
+        <p class="text-secondary small mb-0">Haar cascade face detection &bull; LBPH distance calculation &bull; Optical liveness evaluation</p>
+    </div>
+    <div>
+        <span class="badge bg-primary px-3 py-2">
+            Target Account: {{ current_user.account_number }}
+        </span>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Camera Viewport Card -->
+    <div class="col-lg-7">
+        <div class="card-custom">
+            <h5 class="fw-bold text-white mb-3">Live Video Stream &amp; Distance Scorer</h5>
+            
+            <div class="position-relative bg-dark rounded border border-secondary text-center overflow-hidden mb-3" style="min-height: 360px; display: flex; align-items: center; justify-content: center;">
+                <video id="verify-video" autoplay playsinline muted style="width: 100%; max-height: 380px; object-fit: cover; display: none;"></video>
+                <canvas id="verify-canvas" style="display: none;"></canvas>
+                
+                <div id="verify-placeholder" class="py-5 text-secondary">
+                    <i class="fas fa-shield-halved fs-1 mb-3 d-block opacity-50"></i>
+                    <p class="mb-2">Biometric scanner is standby</p>
+                    <button id="btn-start-verify-cam" class="btn btn-sm btn-outline-info">
+                        <i class="fas fa-camera me-1"></i> Activate Biometric Camera
+                    </button>
+                </div>
+
+                <!-- Verified Stamp Overlay -->
+                <div id="verify-badge" style="display: none; position: absolute; top: 15px; right: 15px;">
+                    <span class="badge bg-success px-3 py-2 fs-6 shadow">
+                        <i class="fas fa-check-circle me-1"></i> IDENTITY VERIFIED
+                    </span>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="d-flex gap-2 flex-wrap mb-3">
+                <button id="btn-verify-face" class="btn btn-success d-flex align-items-center gap-2" disabled>
+                    <i class="fas fa-fingerprint"></i> Scan &amp; Verify Identity
+                </button>
+                <button id="btn-simulate-verify" class="btn btn-outline-light d-flex align-items-center gap-2">
+                    <i class="fas fa-microchip"></i> Simulate Test Match (Auto)
+                </button>
+            </div>
+
+            <!-- Result Box -->
+            <div id="verify-result-box" class="p-3 rounded bg-dark border border-secondary d-none">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="fw-bold" id="match-status-text">Match Result</span>
+                    <span class="badge bg-info" id="match-distance-badge">Distance: 0.0</span>
+                </div>
+                <div class="small text-secondary" id="match-details-text">Awaiting scan...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Verification Telemetry Card -->
+    <div class="col-lg-5">
+        <div class="card-custom mb-4">
+            <h5 class="fw-bold text-white mb-3">Biometric Distance Telemetry</h5>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between small text-secondary mb-1">
+                    <span>LBPH Distance (Lower is closer match)</span>
+                    <span id="telemetry-distance-val">--</span>
+                </div>
+                <div class="progress bg-dark" style="height: 10px;">
+                    <div id="distance-progress-bar" class="progress-bar bg-success" style="width: 0%;"></div>
+                </div>
+                <div class="d-flex justify-content-between text-muted small mt-1" style="font-size: 0.72rem;">
+                    <span>0.0 (Exact)</span>
+                    <span>Threshold: 70.0</span>
+                    <span>100+ (Unknown)</span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="d-flex justify-content-between small text-secondary mb-1">
+                    <span>Texture Variance (Liveness metric)</span>
+                    <span id="telemetry-texture-val">--</span>
+                </div>
+                <div class="progress bg-dark" style="height: 8px;">
+                    <div id="texture-progress-bar" class="progress-bar bg-info" style="width: 65%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-custom">
+            <h5 class="fw-bold text-white mb-2">Multi-Factor Flow</h5>
+            <div class="small text-secondary lh-base">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-success rounded-circle" style="width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center;">1</span>
+                    <span>Account Number Identified (<span class="text-info">{{ current_user.account_number }}</span>)</span>
+                </div>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <span class="badge bg-info rounded-circle" style="width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center;">2</span>
+                    <span>Optical Biometric Verification (Current Step)</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-secondary rounded-circle" style="width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center;">3</span>
+                    <span>Salted PBKDF2 PIN Authorization in ATM Simulator</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let video = document.getElementById('verify-video');
+let canvas = document.getElementById('verify-canvas');
+let placeholder = document.getElementById('verify-placeholder');
+let startBtn = document.getElementById('btn-start-verify-cam');
+let verifyBtn = document.getElementById('btn-verify-face');
+let simulateBtn = document.getElementById('btn-simulate-verify');
+let resultBox = document.getElementById('verify-result-box');
+let statusText = document.getElementById('match-status-text');
+let distBadge = document.getElementById('match-distance-badge');
+let detailsText = document.getElementById('match-details-text');
+let verifyBadge = document.getElementById('verify-badge');
+let distBar = document.getElementById('distance-progress-bar');
+let distVal = document.getElementById('telemetry-distance-val');
+
+let stream = null;
+
+startBtn.addEventListener('click', async () => {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+        video.srcObject = stream;
+        video.style.display = 'block';
+        placeholder.style.display = 'none';
+        verifyBtn.disabled = false;
+    } catch (err) {
+        alert("Camera error: " + err.message + "\nYou can also use the 'Simulate Test Match' button to test using your pre-enrolled samples.");
+    }
+});
+
+function captureVerifyFrame() {
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
+    let ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/jpeg', 0.85);
+}
+
+verifyBtn.addEventListener('click', async () => {
+    let imgData = captureVerifyFrame();
+    verifyBtn.disabled = true;
+    resultBox.classList.remove('d-none');
+    statusText.innerText = "Analyzing facial geometry...";
+    
+    try {
+        let res = await fetch("{{ url_for('face.verify_face') }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ image: imgData })
+        });
+        let data = await res.json();
+        renderVerifyResult(data);
+    } catch (e) {
+        alert("Verification request failed");
+    } finally {
+        verifyBtn.disabled = false;
+    }
+});
+
+simulateBtn.addEventListener('click', async () => {
+    simulateBtn.disabled = true;
+    resultBox.classList.remove('d-none');
+    statusText.innerText = "Testing against enrolled biometric sample...";
+
+    try {
+        let res = await fetch("{{ url_for('face.simulate_verify') }}", { method: "POST" });
+        let data = await res.json();
+        renderVerifyResult(data);
+    } catch (e) {
+        alert("Simulation request failed");
+    } finally {
+        simulateBtn.disabled = false;
+    }
+});
+
+function renderVerifyResult(data) {
+    resultBox.classList.remove('d-none');
+    if (data.match) {
+        statusText.innerText = "MATCH CONFIRMED";
+        statusText.className = "fw-bold text-success";
+        distBadge.className = "badge bg-success";
+        verifyBadge.style.display = 'block';
+        distBar.className = "progress-bar bg-success";
+    } else {
+        statusText.innerText = "VERIFICATION FAILED";
+        statusText.className = "fw-bold text-danger";
+        distBadge.className = "badge bg-danger";
+        verifyBadge.style.display = 'none';
+        distBar.className = "progress-bar bg-danger";
+    }
+
+    detailsText.innerText = data.message;
+    if (data.details && data.details.distance !== undefined) {
+        let d = data.details.distance;
+        distBadge.innerText = `Distance: ${d}`;
+        distVal.innerText = `${d} (Confidence: ${data.details.confidence_pct}%)`;
+        let barPct = Math.min(100, Math.round((d / 100) * 100));
+        distBar.style.width = barPct + '%';
+    }
+}
+</script>
+{% endblock %}

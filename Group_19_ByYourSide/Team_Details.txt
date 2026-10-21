@@ -3,12 +3,12 @@ Project Name: ByYourSide
 
 Team Members:
 
-1. Name: Pranav Chougule
+1. Name: Pranav Chougule (Cloud Computing)
    Roll Number: 52113
 
-2. Name: Tejas Aute
+2. Name: Tejas Aute (Deep Learning)
    Roll Number: 52103
 
-3. Name: Prathamesh Patil
+3. Name: Prathamesh Patil (Deep Learning)
    Roll Number: 52144
 

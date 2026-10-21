@@ -15,7 +15,7 @@
         content="PhishGuard AI-powered phishing URL detection and security analysis dashboard."
     >
 
-    <link rel="stylesheet" href="style.css?v=ir-theme-2">
+    <link rel="stylesheet" href="style.css?v=ir-theme-4">
 
     <link
         rel="preconnect"
@@ -51,7 +51,7 @@
 
                 <div class="brand-logo">
                     <img
-                        src="assets/phishguard-logo.png"
+                        src="phishguard-logo.png"
                         alt="PhishGuard Logo"
                     >
                 </div>
@@ -251,90 +251,6 @@
             <section
                 id="dashboard"
                 class="page-section dashboard-section"
-
-            <!-- =================================================
-                 INFORMATION RETRIEVAL ANALYSIS
-            ================================================== -->
-
-            <section
-                id="ir-analysis"
-                class="page-section"
-                aria-labelledby="irHeading"
-            >
-
-                <div class="section-title">
-
-                    <span class="section-label">INFORMATION RETRIEVAL</span>
-
-                    <h2 id="irHeading">IR Analysis</h2>
-
-                    <p>Supporting URL-term modeling, project graph ranking, and URL-text retrieval from scan history.</p>
-
-                </div>
-
-                <div class="ir-analysis-grid">
-
-                    <article class="ir-analysis-card">
-                        <span class="section-label">UNIT IV · LANGUAGE MODEL</span>
-                        <h3>URL Term Likelihood</h3>
-                        <p class="ir-card-caption">Multinomial language-model phishing likelihood</p>
-                        <strong id="irLanguageScore" class="ir-metric">--</strong>
-                        <span id="irLanguageStatus" class="ir-substatus">Awaiting scan</span>
-                        <div class="ir-terms-block">
-                            <span>Terms more likely in phishing history</span>
-                            <p id="irSuspiciousTerms">--</p>
-                        </div>
-                    </article>
-
-                    <article class="ir-analysis-card">
-                        <span class="section-label">UNIT V · GRAPH RANKING</span>
-                        <h3>Project URL Graph</h3>
-                        <p class="ir-card-caption">Project-level URL/domain graph ranking</p>
-                        <div class="ir-rank-values">
-                            <div>
-                                <span>PageRank score</span>
-                                <strong id="irPageRankScore" class="ir-metric">--</strong>
-                            </div>
-                            <div>
-                                <span>Graph rank</span>
-                                <strong id="irPageRankRank" class="ir-metric">--</strong>
-                            </div>
-                            <div>
-                                <span>Unique URLs / nodes</span>
-                                <strong id="irGraphNodes" class="ir-metric">--</strong>
-                            </div>
-                            <div>
-                                <span>Relationships / edges</span>
-                                <strong id="irGraphEdges" class="ir-metric">--</strong>
-                            </div>
-                        </div>
-                        <span id="irPageRankStatus" class="ir-substatus">Awaiting scan</span>
-                        <p id="irGraphDetails" class="ir-card-caption">Calculated from URL/domain relationships in local scan history; not Google's live PageRank.</p>
-                    </article>
-
-                    <article class="ir-analysis-card ir-recommendations-card">
-                        <span class="section-label">UNIT VI · CONTENT-BASED RETRIEVAL</span>
-                        <h3>Similar URLs</h3>
-                        <p class="ir-card-caption">TF-IDF cosine similarity between historical URL strings</p>
-                        <ol id="irRecommendations" class="ir-recommendation-list">
-                            <li>No similar URLs found.</li>
-                        </ol>
-                        <p class="ir-card-caption">DAAT retrieval from matching historical URL terms</p>
-                        <ol id="irDAATResults" class="ir-recommendation-list">
-                            <li>No matching historical URLs found.</li>
-                        </ol>
-                        <span id="irDAATStatus" class="ir-substatus">Awaiting scan</span>
-                        <p class="ir-card-caption ir-similarity-note">URL-text similarity does not imply similar webpage content or maliciousness.</p>
-                        <span id="irRecommendationStatus" class="ir-substatus">Awaiting scan</span>
-                    </article>
-
-                </div>
-
-                <p id="irOverallStatus" class="ir-overall-status" aria-live="polite">IR analysis appears after a URL is scanned.</p>
-
-            </section>
-
-
             >
 
                 <div class="page-header">
@@ -399,7 +315,7 @@
 
                         <div class="stat-content">
 
-                            <span>Threats Detected</span>
+                            <span>High-Risk URLs</span>
 
                             <strong id="threatsDetected">
                                 0
@@ -418,7 +334,7 @@
 
                         <div class="stat-content">
 
-                            <span>Safe URLs</span>
+                            <span>Low-Risk URLs</span>
 
                             <strong id="safeUrls">
                                 0
@@ -581,6 +497,62 @@
 
 
             <!-- =================================================
+                 INFORMATION RETRIEVAL ANALYSIS
+            ================================================== -->
+
+            <section
+                id="ir-analysis"
+                class="page-section"
+                aria-labelledby="irHeading"
+            >
+                <div class="section-title">
+                    <span class="section-label">INFORMATION RETRIEVAL</span>
+                    <h2 id="irHeading">IR Analysis</h2>
+                    <p>Supporting URL-term modeling, project graph ranking, and content-based retrieval from scan history.</p>
+                </div>
+
+                <div class="ir-analysis-grid">
+                    <article class="ir-analysis-card">
+                        <span class="section-label">UNIT IV · LANGUAGE MODEL</span>
+                        <h3>URL Term Likelihood</h3>
+                        <p class="ir-card-caption">Multinomial language-model phishing likelihood</p>
+                        <strong id="irLanguageScore" class="ir-metric">--</strong>
+                        <span id="irLanguageStatus" class="ir-substatus">Awaiting scan</span>
+                        <div class="ir-terms-block">
+                            <span>Terms more likely in phishing history</span>
+                            <p id="irSuspiciousTerms">--</p>
+                        </div>
+                    </article>
+
+                    <article class="ir-analysis-card">
+                        <span class="section-label">UNIT V · GRAPH RANKING</span>
+                        <h3>Project URL Graph</h3>
+                        <p class="ir-card-caption">Project-level URL/domain graph ranking</p>
+                        <div class="ir-rank-values">
+                            <div><span>PageRank score</span><strong id="irPageRankScore" class="ir-metric">--</strong></div>
+                            <div><span>Graph rank</span><strong id="irPageRankRank" class="ir-metric">--</strong></div>
+                            <div><span>Unique URLs / nodes</span><strong id="irGraphNodes" class="ir-metric">--</strong></div>
+                            <div><span>Relationships / edges</span><strong id="irGraphEdges" class="ir-metric">--</strong></div>
+                        </div>
+                        <span id="irPageRankStatus" class="ir-substatus">Awaiting scan</span>
+                        <p id="irGraphDetails" class="ir-card-caption">Scan history stores URLs but no observed links; graph ranking is unavailable.</p>
+                    </article>
+
+                    <article class="ir-analysis-card ir-recommendations-card">
+                        <span class="section-label">UNIT VI · CONTENT-BASED RETRIEVAL</span>
+                        <h3>Similar URLs</h3>
+                        <p class="ir-card-caption">TF-IDF cosine similarity against previously scanned URLs</p>
+                        <ol id="irRecommendations" class="ir-recommendation-list"><li>No similar URLs found.</li></ol>
+                        <p class="ir-card-caption ir-similarity-note">Similarity is based on URL content/features and does not by itself indicate maliciousness.</p>
+                        <span id="irRecommendationStatus" class="ir-substatus">Awaiting scan</span>
+                    </article>
+                </div>
+
+                <p id="irOverallStatus" class="ir-overall-status" aria-live="polite">IR analysis appears after a URL is scanned.</p>
+            </section>
+
+
+            <!-- =================================================
                  URL SCANNER
             ================================================== -->
 
@@ -650,6 +622,9 @@
                                 placeholder="https://example.com"
                                 autocomplete="off"
                                 spellcheck="false"
+                                maxlength="2048"
+                                aria-describedby="urlValidationMessage"
+                                aria-invalid="false"
                             >
 
                             <button
@@ -662,6 +637,12 @@
                             </button>
 
                         </div>
+
+                        <p
+                            id="urlValidationMessage"
+                            class="url-validation-message"
+                            aria-live="polite"
+                        ></p>
 
 
                         <button
@@ -1254,7 +1235,7 @@
                             class="filter-btn"
                             data-filter="threat"
                         >
-                            Threats
+                            High Risk
                         </button>
 
                         <button
@@ -1263,7 +1244,7 @@
                             class="filter-btn"
                             data-filter="safe"
                         >
-                            Safe
+                            Low Risk
                         </button>
 
                         <button
@@ -1633,8 +1614,8 @@
      JAVASCRIPT
 ========================================================= -->
 
-<script src="api-config.js?v=deploy-1"></script>
-<script src="script.js?v=deploy-1"></script>
+<script src="api-config.js?v=deploy-3"></script>
+<script src="script.js?v=deploy-5"></script>
 
 </body>
 </html>

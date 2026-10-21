@@ -7,8 +7,11 @@
 const API_BASE_URL = String(
     window.PHISHGUARD_API_BASE_URL || "http://127.0.0.1:8000"
 ).replace(/\/+$/, "");
-const API_URL = `${API_BASE_URL}/api/v1/scan`;
-const HISTORY_KEY = "phishguardHistory";
+const MAX_URL_LENGTH = 2048;
+let historyRecords = [];
+let latestScanResult = null;
+let historyUnavailable = false;
+let scanInProgress = false;
 
 /* =========================================================
    HELPER FUNCTIONS
@@ -64,62 +67,98 @@ function isShortenedURL(url) {
     }
 }
 
+function isRestrictedDestination(hostname) {
+    const host = String(hostname || "").toLowerCase().replace(/^\[|\]$/g, "");
+    if (host === "localhost" || host.endsWith(".localhost") || host.endsWith(".local") || host.endsWith(".internal")) {
+        return true;
+    }
+
+    const octets = host.split(".").map(Number);
+    if (octets.length === 4 && octets.every(value => Number.isInteger(value) && value >= 0 && value <= 255)) {
+        const [first, second, third] = octets;
+        return first === 0
+            || first === 10
+            || first === 127
+            || (first === 169 && second === 254)
+            || (first === 172 && second >= 16 && second <= 31)
+            || (first === 192 && (second === 0 || second === 168))
+            || (first === 198 && (second === 18 || second === 19 || second === 51 && third === 100))
+            || (first === 203 && second === 0 && third === 113)
+            || (first === 100 && second >= 64 && second <= 127)
+            || first >= 224;
+    }
+
+    if (host.includes(":")) {
+        return host === "::"
+            || host === "::1"
+            || host.startsWith("::ffff:")
+            || /^[f][c-d]/.test(host)
+            || /^fe[89ab]/.test(host)
+            || host.startsWith("ff")
+            || host.startsWith("2001:db8:");
+    }
+    return false;
+}
+
 function validateURL(value) {
-    if (!value || !value.trim()) {
+    const raw = String(value || "").trim();
+    if (!raw) {
+        return { valid: false, message: "Please enter a URL." };
+    }
+    if (raw.length > MAX_URL_LENGTH) {
+        return { valid: false, message: `URLs must be ${MAX_URL_LENGTH} characters or fewer.` };
+    }
+
+    const schemeMatch = raw.match(/^([a-z][a-z0-9+.-]*):/i);
+    if (schemeMatch && !/^https?:\/\//i.test(raw)) {
         return {
             valid: false,
-            message: "Please enter a website URL."
+            message: /^(http|https)$/i.test(schemeMatch[1])
+                ? "Please enter a valid HTTP or HTTPS URL."
+                : "Unsupported URL scheme. Use HTTP or HTTPS."
         };
     }
 
-    let url = value.trim();
-
-    if (!/^https?:\/\//i.test(url)) {
-        url = "https://" + url;
+    const candidate = schemeMatch ? raw : `https://${raw}`;
+    if (candidate.length > MAX_URL_LENGTH) {
+        return { valid: false, message: `URLs must be ${MAX_URL_LENGTH} characters or fewer.` };
     }
 
     try {
-        const parsed = new URL(url);
-        const hostname = (parsed.hostname || "").toLowerCase();
-
-        if (!hostname) {
-            return {
-                valid: false,
-                message: "Please enter a valid website URL."
-            };
+        const parsed = new URL(candidate);
+        if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+            return { valid: false, message: "Unsupported URL scheme. Use HTTP or HTTPS." };
         }
 
-        if (hostname === "localhost") {
-            return {
-                valid: true,
-                url
-            };
+        const authority = candidate.match(/^https?:\/\/([^/?#]*)/i)?.[1] || "";
+        if (authority.includes("@") || parsed.username || parsed.password) {
+            return { valid: false, message: "URLs containing credentials are not allowed." };
         }
 
-        if (!hostname.includes(".") || hostname.startsWith(".") || hostname.endsWith(".")) {
-            return {
-                valid: false,
-                message: "Invalid URL. Enter a valid hostname such as https://google.com"
-            };
+        const hostname = parsed.hostname.toLowerCase();
+        const hostWithoutBrackets = hostname.replace(/^\[|\]$/g, "");
+        if (!hostname || hostWithoutBrackets.length > 253) {
+            return { valid: false, message: "Please enter a valid HTTP or HTTPS URL." };
         }
 
-        const tld = hostname.split(".").pop() || "";
-        if (!tld || tld.length < 2) {
-            return {
-                valid: false,
-                message: "Invalid URL. Enter a valid hostname such as https://google.com"
-            };
+        if (!hostWithoutBrackets.includes(":")) {
+            const labels = hostWithoutBrackets.split(".");
+            const isIPv4 = labels.length === 4 && labels.every(label => /^\d{1,3}$/.test(label));
+            const validDomain = labels.length >= 2
+                && labels.every(label => label.length <= 63 && /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(label))
+                && (isIPv4 || labels[labels.length - 1].length >= 2);
+            if (!validDomain) {
+                return { valid: false, message: "Please enter a valid HTTP or HTTPS URL." };
+            }
         }
 
-        return {
-            valid: true,
-            url
-        };
+        if (isRestrictedDestination(hostname)) {
+            return { valid: false, message: "This destination is restricted for security reasons." };
+        }
+
+        return { valid: true, url: parsed.href };
     } catch {
-        return {
-            valid: false,
-            message: "Invalid URL. Example: https://google.com"
-        };
+        return { valid: false, message: "Please enter a valid HTTP or HTTPS URL." };
     }
 }
 
@@ -135,6 +174,7 @@ const analyzeArrow = document.querySelector(".analyze-btn-icon");
 
 const scannerMessage = $("scannerMessage");
 const scannerMessageText = $("scannerMessageText");
+const urlValidationMessage = $("urlValidationMessage");
 const scanLoading = $("scanLoading");
 const scanAgainBtn = $("scanAgainBtn");
 
@@ -197,6 +237,7 @@ const reportSummary = $("reportSummary");
 const reportIRSummary = $("reportIRSummary");
 const reportBadge = $("reportBadge");
 const printReportBtn = $("printReportBtn");
+const exportReportBtn = $("exportReportBtn");
 
 /* History */
 
@@ -220,8 +261,6 @@ const irPageRankStatus = $("irPageRankStatus");
 const irGraphDetails = $("irGraphDetails");
 const irRecommendations = $("irRecommendations");
 const irRecommendationStatus = $("irRecommendationStatus");
-const irDAATResults = $("irDAATResults");
-const irDAATStatus = $("irDAATStatus");
 
 /* Dashboard stats */
 
@@ -261,6 +300,20 @@ function hideScannerMessage() {
     }
 }
 
+function setURLValidationMessage(message = "") {
+    const text = String(message || "");
+    if (urlValidationMessage) {
+        urlValidationMessage.textContent = text;
+    }
+    if (urlInput) {
+        urlInput.setAttribute("aria-invalid", String(Boolean(text)));
+    }
+    const wrapper = urlInput?.closest(".url-input-wrapper");
+    if (wrapper) {
+        wrapper.classList.toggle("invalid", Boolean(text));
+    }
+}
+
 
 /* =========================================================
    LOADING
@@ -269,6 +322,9 @@ function hideScannerMessage() {
 function setLoading(isLoading) {
     if (analyzeBtn) {
         analyzeBtn.disabled = isLoading;
+    }
+    if (scanAgainBtn) {
+        scanAgainBtn.disabled = isLoading;
     }
 
     if (analyzeText) {
@@ -293,25 +349,61 @@ function setLoading(isLoading) {
    ========================================================= */
 
 async function analyzeWithBackend(url) {
-
-    const response = await fetch(API_URL, {
+    return requestAPI("/api/v1/scan", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            url: url
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url })
     });
+}
 
-    const payload = await response.json();
-    if (!response.ok) {
-        const error = new Error(payload.detail || `Backend error: ${response.status}`);
-        error.status = response.status;
+async function requestAPI(path, options = {}) {
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 25000);
+
+    try {
+        const response = await fetch(`${API_BASE_URL}${path}`, {
+            ...options,
+            signal: controller.signal
+        });
+        const responseText = await response.text();
+        let payload = null;
+
+        if (responseText) {
+            try {
+                payload = JSON.parse(responseText);
+            } catch {
+                throw new Error(`Backend returned an invalid JSON response (${response.status}).`);
+            }
+        }
+
+        if (!response.ok) {
+            const detail = payload?.detail;
+            const message = typeof detail === "string"
+                ? detail
+                : Array.isArray(detail)
+                    ? detail.map(item => item.msg).filter(Boolean).join(" ")
+                    : detail?.message || detail?.code || `Backend error (${response.status}).`;
+            const error = new Error(message);
+            error.status = response.status;
+            error.payload = detail;
+            throw error;
+        }
+
+        if (payload === null) {
+            throw new Error("Backend returned an empty response.");
+        }
+        return payload;
+    } catch (error) {
+        if (error?.name === "AbortError") {
+            throw new Error("The security backend timed out. Try again in a moment.");
+        }
+        if (error instanceof TypeError) {
+            throw new Error(`Unable to connect to the security backend at ${API_BASE_URL}.`);
+        }
         throw error;
+    } finally {
+        window.clearTimeout(timeout);
     }
-
-    return payload;
 }
 
 
@@ -370,16 +462,20 @@ function convertBackendResult(data) {
         0
     );
 
-    const isPhishing =
-        rawClassification.includes("phish") ||
-        rawClassification.includes("malicious") ||
-        rawClassification.includes("danger") ||
-        riskScoreValue >= 30;
+    const mlIsPhishing = String(ml.classification || "").toLowerCase().includes("phish");
+    const isHighRisk = rawClassification === "high_risk" || riskScoreValue >= 60;
+    const isSuspicious = rawClassification === "medium_risk" || riskScoreValue >= 30;
     const isUnverifiable =
         data.verifiable === false || rawClassification.includes("unverifiable");
 
     const prediction =
-        isPhishing ? "Phishing" : isUnverifiable ? "Unable to verify URL" : "Safe";
+        mlIsPhishing
+            ? "Likely Phishing"
+            : isHighRisk
+                ? isUnverifiable ? "High Risk (Unverified)" : "High Risk"
+                : isSuspicious
+                    ? isUnverifiable ? "Suspicious (Unverified)" : "Suspicious"
+                    : isUnverifiable ? "Unverified" : "Likely Legitimate";
 
     return {
         valid: true,
@@ -425,6 +521,17 @@ function normalizeExplanation(value) {
     }
 
     return "";
+}
+
+
+function verdictLabel(prediction) {
+    if (prediction === "Likely Phishing") return "Likely Phishing";
+    if (prediction === "High Risk (Unverified)") return "High Risk · Unverified";
+    if (prediction === "High Risk") return "High Risk";
+    if (prediction === "Suspicious (Unverified)") return "Suspicious · Unverified";
+    if (prediction === "Suspicious") return "Suspicious";
+    if (prediction === "Unverified" || prediction === "Unable to verify URL") return "Unable to Verify";
+    return "Likely Legitimate";
 }
 
 
@@ -497,10 +604,12 @@ function resetScanDetails(result) {
 function displayResult(result) {
 
     if (!result || result.valid === false) {
+        latestScanResult = null;
         resetScanDetails(result);
         return;
     }
 
+    latestScanResult = result;
     const isUnverifiable = result.verifiable === false;
 
     const score = safeNumber(
@@ -516,8 +625,7 @@ function displayResult(result) {
     /* Risk score */
 
     if (riskScore) {
-        riskScore.textContent =
-            Math.round(score);
+        riskScore.textContent = score.toFixed(2);
     }
 
     /* Risk level */
@@ -527,9 +635,9 @@ function displayResult(result) {
         riskLevel.textContent =
             isUnverifiable
                 ? "Unverified"
-                : score <= 30
+                : score < 30
                 ? "Low Risk"
-                : score <= 70
+                : score < 60
                     ? "Medium Risk"
                     : "High Risk";
     }
@@ -541,9 +649,9 @@ function displayResult(result) {
         riskStatus.textContent =
             isUnverifiable
                 ? "UNVERIFIED"
-                : score <= 30
+                : score < 30
                 ? "LOW"
-                : score <= 70
+                : score < 60
                     ? "MEDIUM"
                     : "HIGH";
     }
@@ -551,22 +659,24 @@ function displayResult(result) {
     /* Verdict */
 
     if (verdictTitle) {
-        verdictTitle.textContent =
-            result.prediction === "Phishing" ? "Phishing URL" : isUnverifiable ? "Unable to Verify URL" : "Safe URL";
+        verdictTitle.textContent = verdictLabel(result.prediction);
     }
 
     if (verdictText) {
-        verdictText.textContent =
-            result.prediction === "Phishing" ? "Phishing URL" : isUnverifiable ? "Unable to Verify URL" : "Safe URL";
+        verdictText.textContent = verdictLabel(result.prediction);
     }
 
     if (verdictDescription) {
         verdictDescription.textContent = getMLVerdictComparison(result)
-            || (result.prediction === "Phishing"
-                ? "This URL has been classified as potentially dangerous."
-                : isUnverifiable
-                    ? "The hostname did not resolve, so this URL cannot be verified as safe."
-                    : "The security model has classified this URL as low risk.");
+            || (result.prediction === "Likely Phishing"
+                ? "The trained model classified this URL as phishing; this is a prediction, not proof."
+                : result.prediction.startsWith("High Risk")
+                    ? "The combined risk score is high; this does not by itself mean the classifier predicted phishing."
+                    : result.prediction.startsWith("Suspicious")
+                        ? "The combined risk score is elevated and should be reviewed."
+                        : isUnverifiable
+                            ? "The destination could not be fully verified; no safe verdict is asserted."
+                            : "The trained model predicts legitimate; this is not a guarantee of safety.");
     }
 
     /* Confidence */
@@ -641,15 +751,12 @@ function displayIRAnalysis(analysis, currentUrl = "", emptyState = "Unavailable"
         if (irPageRankStatus) irPageRankStatus.textContent = emptyState === "Analyzing scan" ? "Awaiting scan result" : "Insufficient graph data";
         if (irRecommendations) irRecommendations.innerHTML = "<li>No similar URLs found.</li>";
         if (irRecommendationStatus) irRecommendationStatus.textContent = emptyState === "Analyzing scan" ? "Awaiting scan result" : "Unavailable";
-        if (irDAATResults) irDAATResults.innerHTML = "<li>No matching historical URLs found.</li>";
-        if (irDAATStatus) irDAATStatus.textContent = emptyState === "Analyzing scan" ? "Awaiting scan result" : "Unavailable";
         return;
     }
 
     const language = analysis.language_model || {};
     const pageRank = analysis.pagerank || {};
     const recommendations = analysis.content_recommendations || {};
-    const documentRetrieval = analysis.document_retrieval || {};
     const languageAvailable = language.status === "available";
     const languageInsufficient = language.status !== "available"
         && /required|insufficient/i.test(String(language.message || ""));
@@ -702,7 +809,8 @@ function displayIRAnalysis(analysis, currentUrl = "", emptyState = "Unavailable"
             : pageRank.status === "available" ? "Insufficient graph data" : pageRank.message || "PageRank unavailable";
     }
     if (irGraphDetails) {
-        irGraphDetails.textContent = "Calculated from URL/domain relationships in local scan history; not Google's live PageRank.";
+        irGraphDetails.textContent = pageRank.message
+            || "Scan history stores URLs but no observed links; graph ranking is unavailable.";
     }
     if (irGraphNodes) {
         irGraphNodes.textContent = Number.isFinite(graphNodeCount) ? String(graphNodeCount) : "--";
@@ -754,42 +862,6 @@ function displayIRAnalysis(analysis, currentUrl = "", emptyState = "Unavailable"
                 ? `${displayedRecommendationCount} historical match${displayedRecommendationCount === 1 ? "" : "es"}`
                 : "No similar URLs found."
             : recommendations.message || "Recommendations unavailable";
-    }
-
-    const retrievedDocuments = Array.isArray(documentRetrieval.results)
-        ? documentRetrieval.results.filter(item =>
-            item
-            && typeof item.url === "string"
-            && item.url.trim()
-            && typeof item.score === "number"
-            && Number.isFinite(item.score)
-            && item.score > 0
-            && item.score <= 1
-        )
-        : [];
-    if (irDAATResults) {
-        irDAATResults.innerHTML = "";
-        if (!retrievedDocuments.length) {
-            const item = document.createElement("li");
-            item.textContent = "No matching historical URLs found.";
-            irDAATResults.appendChild(item);
-        } else {
-            retrievedDocuments.slice(0, 5).forEach(match => {
-                const item = document.createElement("li");
-                const url = document.createElement("span");
-                const score = document.createElement("strong");
-                url.className = "ir-recommendation-url";
-                url.textContent = match.url;
-                score.textContent = `${(match.score * 100).toFixed(1)}%`;
-                item.append(url, score);
-                irDAATResults.appendChild(item);
-            });
-        }
-    }
-    if (irDAATStatus) {
-        irDAATStatus.textContent = documentRetrieval.status === "available"
-            ? `${retrievedDocuments.length} DAAT match${retrievedDocuments.length === 1 ? "" : "es"} (cosine TF-IDF)`
-            : documentRetrieval.message || "DAAT retrieval unavailable";
     }
 }
 
@@ -890,25 +962,31 @@ function displaySecurityChecks(data) {
     const dns = data.dns || {};
     const ssl = data.ssl || {};
     const ml = data.ml || {};
+    const dnsIsPublic = dns.public !== false;
+    const dnsIsVerified = dns.resolves && dnsIsPublic;
+    const sslWasChecked = ssl.checked !== false && typeof ssl.valid === "boolean";
+    const urlHasIndicators = Boolean(
+        security.has_ip_address || security.has_at_symbol || security.suspicious_keyword_count > 0
+    );
 
     setSecurityCheck(
         dnsCheckStatus,
-        dns.resolves ? "Resolved" : "Not Resolved",
-        dns.resolves ? "secure" : "warning"
+        !dns.resolves ? "Not Resolved" : dnsIsPublic ? "Resolved" : "Blocked: non-public host",
+        dnsIsVerified ? "secure" : "warning"
     );
 
     setSecurityCheck(
         sslCheckStatus,
-        ssl.valid ? "Valid" : "Invalid / Unavailable",
-        ssl.valid ? "secure" : "warning"
+        !sslWasChecked ? "Not Checked" : ssl.valid ? "Valid" : "Invalid",
+        !sslWasChecked ? "warning" : ssl.valid ? "secure" : "warning"
     );
 
     setSecurityCheck(
         urlCheckStatus,
-        security.has_ip_address || security.has_at_symbol || security.suspicious_keyword_count > 0
+        urlHasIndicators
             ? "Warning"
             : "Secure",
-        security.has_ip_address || security.has_at_symbol || security.suspicious_keyword_count > 0
+        urlHasIndicators
             ? "warning"
             : "secure"
     );
@@ -923,15 +1001,15 @@ function displaySecurityChecks(data) {
     );
 
     if (dnsCheckIcon) {
-        dnsCheckIcon.textContent = dns.resolves ? "✓" : "!";
+        dnsCheckIcon.textContent = dnsIsVerified ? "✓" : "!";
     }
 
     if (sslCheckIcon) {
-        sslCheckIcon.textContent = ssl.valid ? "✓" : "!";
+        sslCheckIcon.textContent = !sslWasChecked ? "?" : ssl.valid ? "✓" : "!";
     }
 
     if (urlCheckIcon) {
-        urlCheckIcon.textContent = "✓";
+        urlCheckIcon.textContent = urlHasIndicators ? "!" : "✓";
     }
 
     if (mlCheckIcon) {
@@ -954,11 +1032,15 @@ function displayExplanation(result) {
     const fallbackText =
         result?.valid === false
             ? explanationValue || "The scan could not be completed."
-            : result?.prediction === "Phishing"
-            ? "The security analysis identified indicators associated with phishing."
-            : result?.prediction === "Unable to verify URL"
-                ? "The hostname did not resolve, so this URL cannot be verified as safe."
-                : "The URL passed the available security checks with a low calculated risk.";
+            : result?.prediction === "Likely Phishing"
+                ? "The trained model classified this URL as phishing; this is a prediction, not proof."
+                : result?.prediction.startsWith("High Risk")
+                    ? "The combined risk score is high; this does not by itself mean the classifier predicted phishing."
+                    : result?.prediction.startsWith("Suspicious")
+                        ? "The combined risk score is elevated and should be reviewed."
+                        : result?.prediction === "Unverified"
+                            ? "The destination could not be fully verified; no safe verdict is asserted."
+                            : "The trained model predicts legitimate; this is not a guarantee of safety.";
 
     const displayText = [resultMismatch, explanationValue || fallbackText]
         .filter(Boolean)
@@ -972,9 +1054,11 @@ function displayExplanation(result) {
                     ? result.failureType === "scanning"
                         ? "Analysis in progress"
                         : result.failureType === "error" ? "Scan unavailable" : "URL validation failed"
-                    : result.prediction === "Phishing"
-                ? "Potential phishing indicators detected"
-                : "No major phishing indicators detected";
+                    : result.prediction === "Likely Phishing"
+                        ? "Model phishing prediction"
+                        : result.prediction.startsWith("High Risk") || result.prediction.startsWith("Suspicious")
+                            ? "Elevated risk indicators require review"
+                            : "No major phishing indicators detected";
     }
 
     if (aiExplanation) {
@@ -1009,7 +1093,7 @@ function displayExplanation(result) {
         const li = document.createElement("li");
 
         li.textContent =
-            result.prediction === "Phishing"
+            result.prediction === "Likely Phishing" || result.prediction.startsWith("High Risk") || result.prediction.startsWith("Suspicious")
                 ? "Potentially suspicious URL characteristics were detected."
                 : "No additional suspicious indicators were reported.";
 
@@ -1052,12 +1136,9 @@ function getMLVerdictComparison(result) {
         return "";
     }
 
-    const risk = Math.round(safeNumber(result.risk_score, 0));
-    if (mlVerdict === "Legitimate" && result.prediction === "Phishing") {
-        return `The ML model classified the URL as legitimate, but additional security indicators increased the overall risk score to ${risk}/100, resulting in a potentially dangerous overall assessment.`;
-    }
-    if (mlVerdict === "Phishing" && result.prediction === "Safe") {
-        return `The ML model classified the URL as phishing, while the combined security assessment calculated an overall risk score of ${risk}/100.`;
+    const risk = safeNumber(result.risk_score, 0).toFixed(2);
+    if (mlVerdict === "Legitimate" && (result.classification === "high_risk" || result.classification === "medium_risk")) {
+        return `The ML model predicts legitimate, while independent indicators produce a ${result.classification.replace("_", " ")} score of ${risk}/100. This is not a safe verdict.`;
     }
     if (mlVerdict === "Legitimate" && result.verifiable === false) {
         return `The ML model classified the URL as legitimate, but the hostname could not be verified; this result is not presented as safe. The overall risk score is ${risk}/100.`;
@@ -1091,7 +1172,7 @@ function getIRReportSummary(analysis, currentUrl) {
         && graphEdges > 0
         && Number.isFinite(graphScore)
         ? `PageRank ${graphScore.toFixed(6)}, rank #${safeNumber(pageRank.rank, 0)}, ${graphNodes} URLs/nodes and ${graphEdges} relationships/edges`
-        : "Insufficient graph data";
+        : pageRank.message || "No observed link relationships; graph ranking unavailable";
 
     const currentKey = normalizeURLForMatch(currentUrl);
     const matchCount = (Array.isArray(recommendations.recommendations)
@@ -1179,7 +1260,7 @@ function updateReport(result) {
 
     if (reportRiskScore) {
         reportRiskScore.textContent =
-            Math.round(safeNumber(result.risk_score, 0));
+            safeNumber(result.risk_score, 0).toFixed(2);
     }
 
     if (reportConfidence) {
@@ -1192,21 +1273,29 @@ function updateReport(result) {
     }
 
     if (reportBadge) {
-        reportBadge.textContent =
-            result.prediction === "Phishing" ? "THREAT DETECTED" : result.verifiable === false ? "UNVERIFIED" : "SAFE";
+        const isMLPhishing = result.prediction === "Likely Phishing";
+        const isHighRisk = result.prediction.startsWith("High Risk");
+        const isSuspicious = result.prediction.startsWith("Suspicious");
+        reportBadge.textContent = isMLPhishing
+            ? "MODEL PHISHING PREDICTION"
+            : isHighRisk ? "HIGH RISK" : isSuspicious ? "REVIEW REQUIRED" : result.verifiable === false ? "UNVERIFIED" : "LOW RISK";
         reportBadge.classList.remove("warning", "danger", "secure");
         reportBadge.classList.add(
-            result.prediction === "Phishing" ? "danger" : result.verifiable === false ? "warning" : "secure"
+            isMLPhishing || isHighRisk ? "danger" : isSuspicious || result.verifiable === false ? "warning" : "secure"
         );
     }
 
     if (reportSummary) {
         reportSummary.textContent = getMLVerdictComparison(result)
-            || (result.prediction === "Phishing"
-                ? "The URL has been classified as potentially dangerous."
-                : result.verifiable === false
-                    ? "The hostname did not resolve, so the URL cannot be verified as safe."
-                    : "The URL has been classified as low risk by the security analysis.");
+            || (result.prediction === "Likely Phishing"
+                ? "The trained model predicted phishing; this is not proof."
+                : result.prediction.startsWith("High Risk")
+                    ? "The hybrid score is high; independent indicators and model output should be reviewed separately."
+                    : result.prediction.startsWith("Suspicious")
+                        ? "The hybrid score is elevated and should be reviewed."
+                        : result.verifiable === false
+                            ? "The destination could not be fully verified; no safe verdict is asserted."
+                            : "The trained model predicts legitimate; this is not a guarantee of safety.");
     }
 
     if (reportIRSummary) {
@@ -1220,62 +1309,48 @@ function updateReport(result) {
    ========================================================= */
 
 function getHistory() {
-
-    try {
-
-        const saved =
-            localStorage.getItem(HISTORY_KEY);
-
-        const parsed = saved ? JSON.parse(saved) : [];
-        return Array.isArray(parsed) ? parsed : [];
-
-    } catch {
-        return [];
-    }
+    return historyRecords;
 }
 
 
-function saveHistory(result) {
+function historyPrediction(classification, verifiable) {
+    if (verifiable === false) return "Unverified";
+    const normalized = String(classification || "").toLowerCase();
+    if (normalized === "high_risk") return "High Risk";
+    if (normalized === "medium_risk") return "Suspicious";
+    if (normalized === "low_risk") return "Low Risk";
+    return "Unavailable";
+}
 
-    const history =
-        getHistory();
 
-    history.unshift({
-
-        url: result.url,
-
-        riskScore:
-            Math.round(
-                safeNumber(
-                    result.risk_score,
-                    0
-                )
-            ),
-
-        prediction:
-            result.prediction,
-
-        confidence:
-            safeNumber(
-                result.confidence,
-                0
-            ),
-
-        time:
-            formatDate()
-
-    });
-
-    localStorage.setItem(
-        HISTORY_KEY,
-        JSON.stringify(
-            history.slice(0, 50)
-        )
-    );
-
+async function refreshHistory(showError = false) {
+    let loaded = false;
+    try {
+        const payload = await requestAPI("/api/v1/history");
+        if (!Array.isArray(payload)) {
+            throw new Error("Backend returned an invalid scan-history response.");
+        }
+        historyRecords = payload.map(record => ({
+            id: record.id,
+            url: record.url,
+            classification: record.classification,
+            verifiable: record.result?.verifiable !== false,
+            riskScore: safeNumber(record.risk_score, 0).toFixed(2),
+            prediction: historyPrediction(record.classification, record.result?.verifiable),
+            confidence: safeNumber(record.confidence, 0) * 100,
+            time: record.scan_time || "Unknown time"
+        }));
+        historyUnavailable = false;
+        loaded = true;
+    } catch (error) {
+        historyUnavailable = true;
+        if (showError) {
+            showScannerMessage(`Could not refresh scan history: ${error.message}`, "error");
+        }
+    }
     renderHistory();
-
     updateDashboardStats();
+    return loaded;
 }
 
 
@@ -1285,10 +1360,10 @@ function renderHistory() {
         getHistory();
     const filteredHistory = history.filter(item => {
         if (activeHistoryFilter === "threat") {
-            return item.prediction === "Phishing";
+            return item.classification === "high_risk";
         }
         if (activeHistoryFilter === "safe") {
-            return item.prediction === "Safe";
+            return item.classification === "low_risk" && item.verifiable;
         }
         return true;
     });
@@ -1297,6 +1372,12 @@ function renderHistory() {
 
     if (emptyHistory) {
         emptyHistory.style.display = shouldShowEmptyState ? "block" : "none";
+        const heading = emptyHistory.querySelector("h3");
+        const description = emptyHistory.querySelector("p");
+        if (heading) heading.textContent = historyUnavailable ? "History Unavailable" : "No Scan History";
+        if (description) description.textContent = historyUnavailable
+            ? "The backend history could not be loaded. Check the connection and refresh."
+            : "Your analyzed URLs will appear here.";
     }
 
     if (historyTableBody) {
@@ -1313,7 +1394,7 @@ function renderHistory() {
                 <td>${escapeHTML(item.url)}</td>
                 <td>${escapeHTML(item.riskScore)}</td>
                 <td>${escapeHTML(item.prediction)}</td>
-                <td>Completed</td>
+                <td>${item.verifiable ? "Completed" : "Unverified"}</td>
             `;
 
             historyTableBody.appendChild(row);
@@ -1327,7 +1408,7 @@ function renderHistory() {
             cell.textContent = activeHistoryFilter === "threat"
                 ? "No threat scans found."
                 : activeHistoryFilter === "safe"
-                    ? "No safe scans found."
+                    ? "No low-risk scans found."
                     : "No scans match this filter.";
             row.appendChild(cell);
             historyTableBody.appendChild(row);
@@ -1380,14 +1461,12 @@ function updateDashboardStats() {
 
     const threats =
         history.filter(
-            item =>
-                item.prediction === "Phishing"
+            item => item.classification === "high_risk"
         ).length;
 
-    const safe =
+    const lowRisk =
         history.filter(
-            item =>
-                item.prediction === "Safe"
+            item => item.classification === "low_risk" && item.verifiable
         ).length;
 
     if (totalScans) {
@@ -1402,7 +1481,34 @@ function updateDashboardStats() {
 
     if (safeUrls) {
         safeUrls.textContent =
-            safe;
+            lowRisk;
+    }
+}
+
+
+async function refreshServiceStatus() {
+    const topbarStatus = document.querySelector(".system-status span:last-child");
+    const dashboardStatus = document.querySelector(".dashboard-status span:last-child");
+    const protectionTitle = document.querySelector(".protection-card strong");
+    const protectionDetails = document.querySelector(".protection-card span");
+
+    try {
+        const response = await requestAPI("/");
+        const modelAvailable = response.model?.available === true;
+        const statusText = modelAvailable ? "System Ready" : "ML Model Unavailable";
+        if (topbarStatus) topbarStatus.textContent = statusText;
+        if (dashboardStatus) dashboardStatus.textContent = modelAvailable ? "Protection Active" : "Partial Checks Available";
+        if (protectionTitle) protectionTitle.textContent = modelAvailable ? "Protection Active" : "Checks Limited";
+        if (protectionDetails) protectionDetails.textContent = modelAvailable
+            ? "System ready for analysis"
+            : "DNS, SSL and URL checks available";
+        if (modelStatus) modelStatus.textContent = modelAvailable ? "Available" : "Unavailable";
+    } catch {
+        if (topbarStatus) topbarStatus.textContent = "Backend Unavailable";
+        if (dashboardStatus) dashboardStatus.textContent = "Backend Unavailable";
+        if (protectionTitle) protectionTitle.textContent = "Backend Unavailable";
+        if (protectionDetails) protectionDetails.textContent = "Connect to the local API to scan URLs";
+        if (modelStatus) modelStatus.textContent = "Unavailable";
     }
 }
 
@@ -1412,6 +1518,9 @@ function updateDashboardStats() {
    ========================================================= */
 
 async function scanURL() {
+    if (scanInProgress) {
+        return;
+    }
 
     const validation =
         validateURL(
@@ -1420,6 +1529,7 @@ async function scanURL() {
 
     if (!validation.valid) {
 
+        setURLValidationMessage(validation.message);
         const invalidResult = {
             valid: false,
             failureType: "invalid",
@@ -1437,9 +1547,11 @@ async function scanURL() {
         return;
     }
 
+    setURLValidationMessage("");
     const url =
         validation.url;
 
+    scanInProgress = true;
     hideScannerMessage();
 
     setLoading(true);
@@ -1471,37 +1583,52 @@ async function scanURL() {
             return;
         }
 
-        saveHistory(result);
-
+        const historyLoaded = await refreshHistory();
         showScannerMessage(
-            "URL analysis completed successfully.",
-            "success"
+            historyLoaded
+                ? "URL analysis completed successfully."
+                : "URL scan completed, but scan history could not be refreshed.",
+            historyLoaded ? "success" : "warning"
         );
 
     } catch (error) {
 
-        if (error?.status === 400) {
+        if (error?.status === 400 || error?.status === 422) {
+            setURLValidationMessage(error.message || "Please enter a valid HTTP or HTTPS URL.");
             const invalidResult = {
                 valid: false,
                 failureType: "invalid",
                 url,
                 prediction: "Invalid URL",
-                risk_explanation: "Invalid URL. Enter a valid hostname such as https://google.com"
+                risk_explanation: error.message || "Invalid URL. Enter a valid hostname such as https://google.com"
             };
             displayResult(invalidResult);
             showScannerMessage(invalidResult.risk_explanation, "error");
             return;
         }
 
+        if (error?.status === 403 && error?.payload?.code === "destination_restricted") {
+            const message = "This destination is restricted for security reasons.";
+            setURLValidationMessage(message);
+            const partial = error.payload.partial_results;
+            displayResult({
+                valid: false,
+                failureType: "error",
+                url,
+                prediction: "Scan Unavailable",
+                risk_explanation: message
+            });
+            if (partial) {
+                displayFeatures({ url, url_security: partial.url_security || {} });
+                displaySecurityChecks(partial);
+            }
+            showScannerMessage(message, "error");
+            return;
+        }
+
         console.warn("PhishGuard scan could not complete:", error);
-
-        const statusMatch = (error?.message || "").match(/Backend error: (\d+)/);
-        const statusCode = statusMatch ? Number(statusMatch[1]) : null;
-
-        const message =
-            statusCode === 500
-                ? "Security scan failed. Check the backend logs for details."
-                : "Unable to connect to the security backend. Make sure the backend is running on port 8000.";
+        const partial = error?.payload?.partial_results;
+        const message = error?.message || "The scan could not be completed.";
 
         displayResult({
             valid: false,
@@ -1510,10 +1637,14 @@ async function scanURL() {
             prediction: "Scan Unavailable",
             risk_explanation: message
         });
+        if (partial) {
+            displayFeatures({ url, url_security: partial.url_security || {} });
+            displaySecurityChecks(partial);
+        }
         showScannerMessage(message, "error");
 
     } finally {
-
+        scanInProgress = false;
         setLoading(false);
     }
 }
@@ -1530,6 +1661,7 @@ function clearURLInput() {
         urlInput.focus();
     }
 
+    setURLValidationMessage("");
     hideScannerMessage();
 }
 
@@ -1538,12 +1670,16 @@ function clearURLInput() {
    CLEAR HISTORY
    ========================================================= */
 
-function clearHistory() {
+async function clearHistory() {
+    try {
+        await requestAPI("/api/v1/history", { method: "DELETE" });
+    } catch (error) {
+        showScannerMessage(`Could not clear scan history: ${error.message}`, "error");
+        return;
+    }
 
-    localStorage.removeItem(
-        HISTORY_KEY
-    );
-
+    historyRecords = [];
+    historyUnavailable = false;
     activeHistoryFilter = "all";
     historyFilterButtons.forEach(button => {
         const selected = button.dataset.filter === "all";
@@ -1554,6 +1690,7 @@ function clearHistory() {
     renderHistory();
 
     updateDashboardStats();
+    showScannerMessage("Scan history cleared.", "success");
 }
 
 function setupHistoryFilters() {
@@ -1578,6 +1715,26 @@ function setupHistoryFilters() {
 
 function printReport() {
     window.print();
+}
+
+
+function exportReport() {
+    if (!latestScanResult) {
+        showScannerMessage("Complete a successful scan before exporting a report.", "warning");
+        return;
+    }
+
+    const report = {
+        generated_at: new Date().toISOString(),
+        scan: latestScanResult
+    };
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+    const downloadUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = "phishguard-security-report.json";
+    link.click();
+    URL.revokeObjectURL(downloadUrl);
 }
 
 
@@ -1660,7 +1817,18 @@ if (printReportBtn) {
     );
 }
 
+if (exportReportBtn) {
+    exportReportBtn.addEventListener("click", exportReport);
+}
+
 if (urlInput) {
+
+    urlInput.addEventListener("input", () => {
+        if (urlValidationMessage?.textContent) {
+            const validation = validateURL(urlInput.value);
+            setURLValidationMessage(validation.valid ? "" : validation.message);
+        }
+    });
 
     urlInput.addEventListener(
         "keydown",
@@ -1685,6 +1853,9 @@ document.addEventListener(
         renderHistory();
 
         updateDashboardStats();
+
+        refreshServiceStatus();
+        refreshHistory();
 
         setupNavigation();
 

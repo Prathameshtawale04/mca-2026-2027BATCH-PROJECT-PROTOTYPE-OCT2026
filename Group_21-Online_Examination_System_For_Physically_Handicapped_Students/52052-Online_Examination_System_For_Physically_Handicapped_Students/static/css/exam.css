@@ -1,0 +1,378 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+
+    font-family:Arial,Helvetica,sans-serif;
+
+    background:#f2f7ff;
+
+}
+
+header{
+
+    width:100%;
+
+    background:#0056b3;
+
+    color:white;
+
+    padding:18px 30px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+}
+
+header h2{
+
+    font-size:28px;
+
+}
+
+#voiceStartButton{
+    min-height:48px;
+    padding:10px 16px;
+    border:2px solid white;
+    border-radius:8px;
+    background:white;
+    color:#0056b3;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+#voiceStartButton:focus-visible{outline:3px solid #ffbf47;outline-offset:2px;}
+
+#timer{
+
+    font-size:22px;
+
+    font-weight:bold;
+
+}
+
+.container{
+
+    width:80%;
+
+    margin:35px auto;
+
+}
+
+.top{
+
+    background:white;
+
+    padding:20px;
+
+    border-radius:10px;
+
+    box-shadow:0 0 10px rgba(0,0,0,.15);
+
+    margin-bottom:25px;
+
+}
+
+.top h3{
+
+    color:#0056b3;
+
+    margin-bottom:10px;
+
+}
+
+#progress{
+
+    font-size:18px;
+
+}
+
+.question-box{
+
+    display:none;
+
+    background:white;
+
+    padding:30px;
+
+    border-radius:10px;
+
+    box-shadow:0 0 12px rgba(0,0,0,.15);
+
+}
+
+.question-box.active{
+
+    display:block;
+
+}
+
+.question-box h2{
+
+    color:#0056b3;
+
+    margin-bottom:20px;
+
+}
+
+.question-text{
+
+    font-size:22px;
+
+    margin-bottom:25px;
+
+    line-height:1.7;
+
+}
+
+label{
+
+    display:block;
+
+    margin:18px 0;
+
+    padding:15px;
+
+    border:1px solid #cccccc;
+
+    border-radius:8px;
+
+    cursor:pointer;
+
+    font-size:20px;
+
+}
+
+label:hover{
+
+    background:#eef5ff;
+
+}
+
+input[type="radio"]{
+
+    margin-right:12px;
+
+    transform:scale(1.3);
+
+}
+
+.status{
+
+    margin-top:30px;
+
+    background:white;
+
+    padding:20px;
+
+    border-radius:10px;
+
+    box-shadow:0 0 10px rgba(0,0,0,.15);
+
+}
+
+.status h3{
+
+    color:#0056b3;
+
+    margin-bottom:10px;
+
+}
+
+#voiceStatus{
+
+    font-size:20px;
+
+    color:#d35400;
+
+    font-weight:bold;
+
+}
+
+
+.correct{
+
+    background:#d4edda;
+
+}
+
+.locked{
+
+    border:3px solid green;
+
+}
+
+.warning{
+
+    background:#fff3cd;
+
+}
+
+.exam-controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:20px;
+}
+
+.exam-controls button{
+    border:0;
+    border-radius:6px;
+    padding:12px 16px;
+    background:#0056b3;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+.exam-controls button:focus-visible{
+    outline:3px solid #f0a500;
+    outline-offset:2px;
+}
+
+.exam-controls .submit-button{
+    background:#b42318;
+}
+
+@media(max-width:768px){
+
+    header{
+        flex-wrap:wrap;
+        gap:12px;
+        padding:14px 18px;
+    }
+
+    header h2{
+        font-size:22px;
+    }
+
+    #timer{
+        font-size:18px;
+    }
+
+    #voiceStartButton{
+        font-size:15px;
+    }
+
+    .container{
+
+        width:95%;
+
+    }
+
+    .question-text{
+
+        font-size:18px;
+
+    }
+
+    label{
+
+        font-size:17px;
+
+    }
+
+}
+.camera-container{
+
+    margin-top:25px;
+
+    margin-bottom:25px;
+
+    background:white;
+
+    padding:20px;
+
+    border-radius:10px;
+
+    box-shadow:0 0 10px rgba(0,0,0,.15);
+
+}
+
+.camera-container h3{
+
+    color:#0056b3;
+
+    margin-bottom:15px;
+
+}
+
+#video{
+
+    width:320px;
+
+    height:240px;
+
+    border:3px solid #0056b3;
+
+    border-radius:8px;
+
+}
+
+.video-stage{
+    position:relative;
+    display:inline-block;
+    width:min(320px, 100%);
+    line-height:0;
+    vertical-align:top;
+}
+
+.video-stage #video{
+    display:block;
+    width:100%;
+    height:auto;
+}
+
+.video-stage #overlay{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+}
+
+#cameraStatus{
+
+    margin-top:12px;
+
+    font-size:18px;
+
+    color:#0056b3;
+
+    font-weight:bold;
+
+}
+.warning-box{
+
+    margin-top:20px;
+
+    background:#fff3cd;
+
+    padding:20px;
+
+    border-radius:8px;
+
+    border:2px solid orange;
+
+}
+
+.warning-box h3{
+
+    color:#d35400;
+
+}
+
+#cameraStatus{
+
+    font-size:20px;
+
+    font-weight:bold;
+
+}

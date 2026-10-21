@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Exam History</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/history.css') }}">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Previous Exam Results</h1>
+
+    <table>
+
+        <tr>
+
+            <th>Exam ID</th>
+            <th>Score</th>
+            <th>Total</th>
+            <th>Percentage</th>
+            <th>Date</th>
+
+        </tr>
+
+        {% for result in results %}
+
+        <tr>
+
+            <td>{{ result.result_id }}</td>
+            <td>{{ result.score }}</td>
+            <td>{{ result.total_questions }}</td>
+            <td>{{ result.percentage }}%</td>
+            <td>{{ result.exam_date }}</td>
+
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+    <br>
+
+    <a href="/dashboard">
+
+        <button>Back to Dashboard</button>
+
+    </a>
+
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/voice-controls.css') }}">
+<script src="{{ url_for('static', filename='js/site_voice.js') }}"></script>
+</body>
+
+</html>

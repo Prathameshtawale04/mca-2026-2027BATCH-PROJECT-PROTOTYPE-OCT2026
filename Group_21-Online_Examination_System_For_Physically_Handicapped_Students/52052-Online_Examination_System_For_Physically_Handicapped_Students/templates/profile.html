@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Student Profile</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/profile.css') }}">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="profile-box">
+
+        <h1>Student Profile</h1>
+
+        <table>
+
+            <tr>
+                <th>Student ID</th>
+                <td>{{ student.student_id }}</td>
+            </tr>
+
+            <tr>
+                <th>Full Name</th>
+                <td>{{ student.full_name }}</td>
+            </tr>
+
+            <tr>
+                <th>Email</th>
+                <td>{{ student.email }}</td>
+            </tr>
+
+            <tr>
+                <th>Mobile Number</th>
+                <td>{{ student.mobile }}</td>
+            </tr>
+
+            <tr>
+                <th>Gender</th>
+                <td>{{ student.gender }}</td>
+            </tr>
+
+            <tr>
+                <th>Date of Birth</th>
+                <td>{{ student.dob }}</td>
+            </tr>
+
+            <tr>
+                <th>Disability Type</th>
+                <td>Visually Impaired</td>
+            </tr>
+
+            <tr>
+                <th>Status</th>
+                <td>Active</td>
+            </tr>
+
+        </table>
+
+        <div class="buttons">
+
+            <a href="/dashboard">
+                <button>Dashboard</button>
+            </a>
+
+            <a href="/logout">
+                <button>Logout</button>
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/voice-controls.css') }}">
+<script src="{{ url_for('static', filename='js/site_voice.js') }}"></script>
+</body>
+
+</html>

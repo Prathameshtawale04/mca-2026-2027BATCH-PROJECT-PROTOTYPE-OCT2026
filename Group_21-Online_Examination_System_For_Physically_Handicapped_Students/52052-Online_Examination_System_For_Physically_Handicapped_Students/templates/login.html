@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Student Login</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/login.css') }}">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="login-box">
+
+        <h1>Student Login</h1>
+
+        <p>Login to continue your examination</p>
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+
+            {% for message in messages %}
+
+                <div class="message">
+
+                    {{ message }}
+
+                </div>
+
+            {% endfor %}
+
+        {% endif %}
+        {% endwith %}
+
+        <form id="loginForm" action="/login" method="POST">
+
+            <label>Email</label>
+
+            <input
+                type="email"
+                name="email"
+                placeholder="Enter Email"
+                required>
+
+            <label>Password</label>
+
+            <input
+                type="password"
+                name="password"
+                id="password"
+                placeholder="Enter Password"
+                required>
+
+            <div class="show">
+
+                <input
+                    type="checkbox"
+                    onclick="showPassword()">
+
+                Show Password
+
+            </div>
+
+            <input
+                type="submit"
+                value="Login">
+
+        </form>
+
+        <p class="register">
+
+            Don't have an account?
+
+            <a href="/register">
+
+                Register Here
+
+            </a>
+
+        </p>
+
+    </div>
+
+</div>
+
+<script>
+
+function showPassword(){
+
+var x=document.getElementById("password");
+
+if(x.type==="password")
+
+x.type="text";
+
+else
+
+x.type="password";
+
+}
+
+</script>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/voice-controls.css') }}">
+<script src="{{ url_for('static', filename='js/site_voice.js') }}"></script>
+
+</body>
+
+</html>

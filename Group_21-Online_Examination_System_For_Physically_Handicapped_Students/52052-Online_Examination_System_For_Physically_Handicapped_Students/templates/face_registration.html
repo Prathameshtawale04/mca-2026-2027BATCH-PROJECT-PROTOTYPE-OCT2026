@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Face Registration</title>
+
+    <style>
+
+        body{
+            font-family: Arial;
+            text-align:center;
+            background:#f4f4f4;
+        }
+
+        .container{
+            width:700px;
+            margin:auto;
+            margin-top:30px;
+            background:white;
+            padding:20px;
+            border-radius:10px;
+            box-shadow:0px 0px 10px gray;
+        }
+
+        video{
+            width:640px;
+            height:480px;
+            border:2px solid #333;
+            border-radius:10px;
+        }
+
+        button{
+            margin-top:20px;
+            padding:12px 25px;
+            font-size:18px;
+            cursor:pointer;
+        }
+
+        #status{
+            margin-top:20px;
+            font-size:20px;
+            color:green;
+            font-weight:bold;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Face Registration</h2>
+
+<p>
+Please keep your face inside the camera.
+The system will automatically capture your face images.
+</p>
+
+<video
+id="video"
+autoplay
+playsinline>
+</video>
+
+<br>
+
+<button id="startBtn">
+Start Face Registration
+</button>
+
+<p id="status"></p>
+
+<script src="{{ url_for('static', filename='js/face_registration.js') }}"></script>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/voice-controls.css') }}">
+<script src="{{ url_for('static', filename='js/site_voice.js') }}"></script>
+
+</div>
+
+</body>
+
+</html>

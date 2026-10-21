@@ -1,0 +1,53 @@
+command,label
+next,next
+next question,next
+go next,next
+next one,next
+move next,next
+go to next question,next
+
+previous question,previous
+go back,previous
+previous,previous
+back,previous
+
+repeat question,repeat
+repeat,repeat
+repeat current question,repeat
+say again,repeat
+read again,repeat
+
+read options,read_options
+read all options,read_options
+options,read_options
+
+option a,option_a
+choose option a,option_a
+select option a,option_a
+mark option a,option_a
+option A please,option_a
+
+option b,option_b
+choose option b,option_b
+select option b,option_b
+mark option b,option_b
+
+option c,option_c
+choose option c,option_c
+select option c,option_c
+mark option c,option_c
+
+option d,option_d
+choose option d,option_d
+select option d,option_d
+mark option d,option_d
+
+lock answer,lock
+lock my answer,lock
+lock it,lock
+confirm answer,lock
+
+submit exam,submit
+submit,submit
+finish exam,submit
+finish,submit

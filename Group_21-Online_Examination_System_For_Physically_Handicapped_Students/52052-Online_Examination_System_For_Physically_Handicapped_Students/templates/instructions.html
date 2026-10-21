@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Exam Instructions</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/instructions.css') }}">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="instruction-box">
+
+        <h1>Online Examination Instructions</h1>
+
+        <p class="welcome">
+
+            Welcome <strong>{{ session['student_name'] }}</strong>
+
+        </p>
+
+        <h2>Exam Rules</h2>
+
+        <ul>
+
+            <li>Total Questions : <strong>20</strong></li>
+
+            <li>Exam Duration : <strong>30 Minutes</strong></li>
+
+            <li>Each Question carries 1 mark.</li>
+
+            <li>No Negative Marking.</li>
+
+            <li>Do not refresh or close the browser.</li>
+
+            <li>The exam will automatically submit when the timer ends.</li>
+
+            <li>Each question can be answered only once.</li>
+
+        </ul>
+
+        <h2>Accessibility Instructions</h2>
+
+        <ul>
+
+            <li>Voice assistance is available for reading questions.</li>
+
+            <li>Use keyboard navigation if required.</li>
+
+            <li>Use the on-screen controls if voice commands are unavailable.</li>
+
+        </ul>
+
+        <div class="details">
+
+            <p><strong>Student :</strong> {{ session['student_name'] }}</p>
+
+            <p><strong>Email :</strong> {{ session['student_email'] }}</p>
+
+            <p><strong>Total Questions :</strong> 20</p>
+
+            <p><strong>Duration :</strong> 30 Minutes</p>
+
+        </div>
+
+        <div class="accept">
+
+            <input
+                type="checkbox"
+                id="agree">
+
+            <label for="agree">
+
+                I have read and understood all the instructions.
+
+            </label>
+
+        </div>
+
+        <button
+            id="startBtn"
+            disabled
+            onclick="startExam()">
+
+            Start Exam
+
+        </button>
+
+    </div>
+
+</div>
+
+<script>
+
+const check=document.getElementById("agree");
+
+const btn=document.getElementById("startBtn");
+
+check.addEventListener("change",function(){
+
+btn.disabled=!this.checked;
+
+});
+
+function startExam(){
+
+window.location.href="/verify_face";
+
+}
+
+</script>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/voice-controls.css') }}">
+<script src="{{ url_for('static', filename='js/site_voice.js') }}"></script>
+
+</body>
+
+</html>

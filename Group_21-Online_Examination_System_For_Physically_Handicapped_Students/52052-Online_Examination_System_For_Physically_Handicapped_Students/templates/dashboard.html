@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Student Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/dashboard.css') }}">
+
+</head>
+
+<body>
+
+<header>
+
+    <h2>Online Examination System</h2>
+
+    <div class="student">
+
+        Welcome, {{ session['student_name'] }}
+
+    </div>
+
+</header>
+
+<div class="container">
+
+    <div class="profile">
+
+        <h2>Student Profile</h2>
+
+        <table>
+
+            <tr>
+
+                <th>Name</th>
+
+                <td>{{ session['student_name'] }}</td>
+
+            </tr>
+
+            <tr>
+
+                <th>Email</th>
+
+                <td>{{ session['student_email'] }}</td>
+
+            </tr>
+
+            <tr>
+
+                <th>Status</th>
+
+                <td>Active</td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+    <div class="cards">
+        <div class="card">
+
+            <h3> Profile</h3>
+
+            <p>
+
+                View your personal information.
+
+            </p>
+
+            <a href="/profile">
+
+                View Profile
+
+            </a>
+
+        </div>
+
+        <div class="card">
+
+    <h3>Face Registration</h3>
+
+    {% if face_registered %}
+
+        <p>
+
+            Face registration completed.
+
+        </p>
+
+        <a href="/face_registration">
+
+            View
+
+        </a>
+
+    {% else %}
+
+        <p>
+
+            Face registration required.
+
+        </p>
+
+        <a href="/face_registration">
+
+            Register Face
+
+        </a>
+
+    {% endif %}
+
+        </div>
+        <div class="card">
+
+            <h3>📝 Start Exam</h3>
+
+            <p>
+
+                Begin your examination.
+
+            </p>
+
+            <a href="/start_exam">
+
+                Start
+
+            </a>
+
+        </div>
+
+        <div class="card">
+
+            <h3>📊 Results</h3>
+
+            <p>
+
+                View your exam results.
+
+            </p>
+
+            <a href="/history">
+
+                View Results
+
+            </a>
+
+        </div>
+
+        <div class="card">
+
+            <h3>📜 Exam History</h3>
+
+            <p>
+
+                View all your previous exam results.
+
+            </p>
+
+            <a href="/history">
+
+                View
+
+            </a>
+
+        </div>
+        <div class="card">
+
+            <h3>🚪 Logout</h3>
+
+            <p>
+
+                Logout from your account.
+
+            </p>
+
+            <a href="/logout">
+
+                Logout
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/voice-controls.css') }}">
+<script src="{{ url_for('static', filename='js/site_voice.js') }}?v=voice-20261015-2"></script>
+
+</body>
+
+</html>

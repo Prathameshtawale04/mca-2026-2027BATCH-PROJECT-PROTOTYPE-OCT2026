@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Exam Result</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/result.css') }}">
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="result-box">
+
+        <h1>Online Examination Result</h1>
+
+        <h2>Congratulations {{ session['student_name'] }}</h2>
+
+        <p>Your examination has been completed successfully.</p>
+
+        <table>
+
+            <tr>
+                <th>Student Name</th>
+                <td>{{ session['student_name'] }}</td>
+            </tr>
+
+            <tr>
+                <th>Email</th>
+                <td>{{ session['student_email'] }}</td>
+            </tr>
+
+            <tr>
+                <th>Total Questions</th>
+                <td>{{ total_questions }}</td>
+            </tr>
+
+            <tr>
+                <th>Correct Answers</th>
+                <td>{{ score }}</td>
+            </tr>
+
+            <tr>
+                <th>Wrong Answers</th>
+                <td>{{ total_questions - score }}</td>
+            </tr>
+
+            <tr>
+                <th>Score</th>
+                <td>{{ score }}/{{ total_questions }}</td>
+            </tr>
+
+            <tr>
+                <th>Percentage</th>
+                <td>{{ percentage }}%</td>
+            </tr>
+
+            <tr>
+                <th>Result</th>
+                <td>
+
+                    {% if percentage >= 40 %}
+
+                        PASS
+
+                    {% else %}
+
+                        FAIL
+
+                    {% endif %}
+
+                </td>
+            </tr>
+
+        </table>
+
+        <div class="buttons">
+
+            <a href="/dashboard">
+
+                <button>Dashboard</button>
+
+            </a>
+
+            <a href="/logout">
+
+                <button>Logout</button>
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/voice-controls.css') }}">
+<script src="{{ url_for('static', filename='js/site_voice.js') }}"></script>
+</body>
+
+</html>

@@ -1,0 +1,450 @@
+/* 
+ * landing.css — SecretVault Clean Solid-Color Light Landing Page
+ * Pure solid colors, clean cards, crisp borders, no gradients
+ */
+
+:root {
+    --bg-page:       #f8fafc;
+    --bg-card:       #ffffff;
+    --border-light:  #e2e8f0;
+    --border-medium: #cbd5e1;
+    --text-main:     #0f172a;
+    --text-muted:    #64748b;
+    --primary:       #4f46e5;
+    --primary-hover: #4338ca;
+    --primary-light: #eef2ff;
+}
+
+body {
+    background-color: var(--bg-page);
+    color: var(--text-main);
+}
+
+/* Navbar override for landing */
+.navbar {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid var(--border-light) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.nav-brand, .nav-link, .nav-user-btn {
+    color: var(--text-main) !important;
+}
+.nav-user-btn {
+    border-color: var(--border-light) !important;
+    background-color: #f1f5f9 !important;
+}
+.nav-user-menu svg {
+    color: var(--text-main);
+}
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-main) !important;
+}
+
+/* ─── Hero Section ──────────────────────────────────────────────── */
+.hero {
+    position: relative;
+    min-height: 85vh;
+    display: flex;
+    align-items: center;
+    padding: 5rem 2rem 3rem;
+    background-color: var(--bg-page);
+    overflow: hidden;
+}
+
+.hero-bg {
+    display: none; /* No gradients or blobs */
+}
+
+.hero-content {
+    flex: 1;
+    max-width: 620px;
+    z-index: 1;
+}
+
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    background-color: #ffffff;
+    border: 1px solid var(--border-medium);
+    font-size: 0.85rem;
+    color: #475569;
+    font-weight: 600;
+    margin-bottom: 1.75rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.badge-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #16a34a;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    line-height: 1.15;
+    margin-bottom: 1.25rem;
+    color: var(--text-main);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+}
+
+.brand-text {
+    color: var(--primary);
+    display: inline-block;
+}
+
+.hero-subtitle {
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    margin-bottom: 2.25rem;
+    line-height: 1.65;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-primary {
+    background-color: var(--primary) !important;
+    color: #ffffff !important;
+    border: 1px solid var(--primary) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.btn-primary:hover {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+}
+
+.btn-outline {
+    background-color: #ffffff !important;
+    border: 1px solid var(--border-medium) !important;
+    color: var(--text-main) !important;
+}
+.btn-outline:hover {
+    background-color: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+}
+
+.hero-stats {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--border-light);
+    flex-wrap: wrap;
+}
+.stat-item {
+    display: flex;
+    flex-direction: column;
+}
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--text-main);
+    font-family: var(--font-mono, monospace);
+}
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+.stat-divider {
+    width: 1px;
+    height: 36px;
+    background-color: var(--border-light);
+}
+
+@media (max-width: 768px) {
+    .stat-divider { display: none; }
+}
+
+/* ─── Hero Visual (Clean Solid Diagram) ─────────────────────────── */
+.hero-visual {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+    padding: 2rem;
+}
+
+.security-diagram {
+    position: relative;
+    width: 380px;
+    height: 380px;
+    max-width: 100%;
+}
+
+.diagram-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 110px;
+    height: 110px;
+    background-color: #ffffff;
+    border: 2px solid var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.12);
+    z-index: 10;
+}
+.shield-icon {
+    width: 52px;
+    height: 52px;
+    color: var(--primary);
+}
+
+.diagram-orbit {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    animation: spinOrbit 24s linear infinite;
+    border: 1px dashed var(--border-medium);
+    border-radius: 50%;
+}
+.diagram-orbit.orbit-1 { animation-duration: 22s; }
+.diagram-orbit.orbit-2 { animation-duration: 26s; animation-direction: reverse; }
+.diagram-orbit.orbit-3 { animation-duration: 24s; }
+
+.orbit-dot {
+    position: absolute;
+    top: 0;
+    left: calc(50% - 14px);
+    width: 28px;
+    height: 28px;
+    background-color: #ffffff;
+    border: 2px solid #0284c7;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transform-origin: 50% 190px;
+    transform: rotate(var(--angle));
+}
+
+.orbit-label {
+    position: absolute;
+    top: 34px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.775rem;
+    color: #0284c7;
+    font-weight: 700;
+    opacity: 0;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+    background-color: #ffffff;
+    border: 1px solid var(--border-medium);
+    padding: 2px 8px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+.orbit-dot:hover .orbit-label {
+    opacity: 1;
+}
+
+@keyframes spinOrbit {
+    100% { transform: rotate(360deg); }
+}
+
+/* ─── Sections ──────────────────────────────────────────────────── */
+.section {
+    padding: 5rem 2rem;
+    max-width: 1240px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 3.5rem;
+}
+
+.section-tag {
+    display: inline-block;
+    padding: 5px 14px;
+    background-color: var(--primary-light);
+    color: var(--primary);
+    border-radius: 16px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    border: 1px solid #c7d2fe;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.section-header h2 {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-main) !important;
+    font-weight: 800;
+}
+
+.section-header p {
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto;
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+/* ─── Pipeline ──────────────────────────────────────────────────── */
+.pipeline {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.pipeline-step {
+    background-color: #ffffff;
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    padding: 2.25rem 1.75rem;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.pipeline-step:hover {
+    transform: translateY(-4px);
+    border-color: #a5b4fc;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.step-number {
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #e2e8f0;
+    line-height: 1;
+}
+
+.step-icon {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 1.25rem;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--primary-light);
+    border-radius: 12px;
+    padding: 10px;
+}
+.step-icon svg {
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+}
+
+.pipeline-step h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.65rem;
+    color: var(--text-main) !important;
+}
+
+.pipeline-step p {
+    color: var(--text-muted);
+    font-size: 0.925rem;
+    line-height: 1.6;
+    margin-bottom: 0;
+}
+
+/* ─── Features Grid ─────────────────────────────────────────────── */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.feature-card {
+    background-color: #ffffff;
+    border: 1px solid var(--border-light);
+    border-radius: 16px;
+    padding: 2.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.feature-card:hover {
+    transform: translateY(-4px);
+    border-color: #a5b4fc;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.feature-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    background-color: var(--primary-light);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.25rem;
+}
+.feature-icon svg {
+    width: 26px;
+    height: 26px;
+}
+
+/* ─── CTA Section ───────────────────────────────────────────────── */
+.cta-section {
+    padding-bottom: 6rem;
+}
+
+.cta-card {
+    background-color: #eef2ff;
+    border: 1px solid #c7d2fe;
+    border-radius: 20px;
+    padding: 4.5rem 2rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.08);
+}
+.cta-glow {
+    display: none; /* No gradients */
+}
+
+.cta-card h2 {
+    font-size: 2.5rem;
+    color: #1e1b4b !important;
+    margin-bottom: 1rem;
+    font-weight: 800;
+}
+
+.cta-card p {
+    color: #4338ca;
+    margin-bottom: 2.5rem;
+    font-size: 1.15rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+@media (max-width: 992px) {
+    .hero { flex-direction: column; text-align: center; padding-top: 6rem; }
+    .hero-content { margin-bottom: 2.5rem; }
+    .hero-actions { justify-content: center; }
+    .hero-stats { justify-content: center; }
+    .hero-visual { padding: 0; width: 100%; }
+}
+
+@media (max-width: 600px) {
+    .hero-title { font-size: 2.35rem; }
+    .section-header h2 { font-size: 1.85rem; }
+    .cta-card { padding: 3rem 1.5rem; }
+    .cta-card h2 { font-size: 1.85rem; }
+}

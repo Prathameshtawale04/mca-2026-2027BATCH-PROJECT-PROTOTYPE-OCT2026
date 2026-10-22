@@ -1,0 +1,27 @@
+PROJECT NAME: PhishGuard – Phishing URL Risk Detector
+
+PROJECT DESCRIPTION:
+A web-based project that analyzes URLs to identify potential phishing threats using machine learning and URL security checks.
+
+TEAM MEMBERS:
+
+1. Name: Chandan Vaishnav
+   Roll Number: 52067
+
+2. Name: Sumit Palekar 
+   Roll Number: 52051
+
+3. Name: Raj khandagle 
+   Roll Number: 52037
+
+4. Name: Fayaj shekh
+   Roll Number: 52062
+
+GUIDE / FACULTY: [bhide sir ]
+
+TECHNOLOGIES USED:
+- Python
+- FastAPI
+- Machine Learning
+- HTML, CSS, JavaScript
+- URL Security Analysis

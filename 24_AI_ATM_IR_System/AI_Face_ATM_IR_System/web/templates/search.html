@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+
+{% block title %}Intelligent IR Search Engine | AI Face ATM & IR System{% endblock %}
+{% block page_title %}Intelligent Multi-Model Information Retrieval Search{% endblock %}
+
+{% block content %}
+<!-- Search Controls Card -->
+<div class="card-custom mb-4">
+    <div style="text-align: center; max-width: 680px; margin: 0.5rem auto 1.5rem;">
+        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Unified Intelligent IR Search Engine</h2>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+            Simultaneous multi-model score fusion: Language Models &bull; TF-IDF &bull; DFR &bull; PageRank &bull; Semantic Web
+        </p>
+    </div>
+
+    <!-- Search Bar -->
+    <div style="max-width: 760px; margin: 0 auto 1.25rem;">
+        <div style="display: flex; gap: 8px;">
+            <div style="position: relative; flex: 1;">
+                <i class="fas fa-magnifying-glass" style="position: absolute; left: 16px; top: 16px; color: var(--text-muted);"></i>
+                <input type="text" id="intelli-search-input" value="{{ initial_query or 'face recognition ATM biometric security' }}" placeholder="Enter query (e.g. face recognition ATM security)..." style="width: 100%; padding: 0.85rem 1rem 0.85rem 2.8rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text-main); font-size: 1.05rem;">
+            </div>
+            <button id="btn-run-intelli-search" class="btn-custom btn-primary-custom" style="padding: 0 1.5rem; font-size: 1rem;">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </div>
+
+        <!-- Quick Query Suggestion Pills -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 0.75rem;">
+            <span style="font-size: 0.75rem; color: var(--text-muted); align-self: center;">Suggested:</span>
+            <button class="btn-custom btn-outline-custom q-pill" style="padding: 0.2rem 0.6rem; font-size: 0.75rem;" onclick="setQuery('face recognition ATM biometric security')">ATM Face Recognition</button>
+            <button class="btn-custom btn-outline-custom q-pill" style="padding: 0.2rem 0.6rem; font-size: 0.75rem;" onclick="setQuery('PBKDF2 PIN hashing cryptography')">PIN Hashing PBKDF2</button>
+            <button class="btn-custom btn-outline-custom q-pill" style="padding: 0.2rem 0.6rem; font-size: 0.75rem;" onclick="setQuery('PageRank web crawling search engine')">PageRank & Crawlers</button>
+            <button class="btn-custom btn-outline-custom q-pill" style="padding: 0.2rem 0.6rem; font-size: 0.75rem;" onclick="setQuery('collaborative filtering recommender systems')">Collaborative Filtering</button>
+        </div>
+    </div>
+
+    <!-- Collapsible Weights Tuning Section -->
+    <div style="max-width: 760px; margin: 0 auto; border-top: 1px solid var(--card-border); padding-top: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-accent);">
+                <i class="fas fa-sliders"></i> Algorithmic Fusion Weights Tuning
+            </span>
+            <button class="btn-custom btn-outline-custom" style="padding: 0.2rem 0.5rem; font-size: 0.72rem;" onclick="resetWeights()">Reset Defaults</button>
+        </div>
+
+        <div class="row g-3" style="font-size: 0.78rem;">
+            <div class="col-md">
+                <label>Language Model: <strong id="lbl-w-lm">0.25</strong></label>
+                <input type="range" id="slider-w-lm" min="0" max="1" step="0.05" value="0.25" style="width: 100%;" oninput="updateWeightLabels()">
+            </div>
+            <div class="col-md">
+                <label>TF-IDF Cosine: <strong id="lbl-w-tfidf">0.25</strong></label>
+                <input type="range" id="slider-w-tfidf" min="0" max="1" step="0.05" value="0.25" style="width: 100%;" oninput="updateWeightLabels()">
+            </div>
+            <div class="col-md">
+                <label>DFR (InL2): <strong id="lbl-w-dfr">0.20</strong></label>
+                <input type="range" id="slider-w-dfr" min="0" max="1" step="0.05" value="0.20" style="width: 100%;" oninput="updateWeightLabels()">
+            </div>
+            <div class="col-md">
+                <label>PageRank: <strong id="lbl-w-pr">0.15</strong></label>
+                <input type="range" id="slider-w-pr" min="0" max="1" step="0.05" value="0.15" style="width: 100%;" oninput="updateWeightLabels()">
+            </div>
+            <div class="col-md">
+                <label>Semantic: <strong id="lbl-w-sem">0.15</strong></label>
+                <input type="range" id="slider-w-sem" min="0" max="1" step="0.05" value="0.15" style="width: 100%;" oninput="updateWeightLabels()">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search Results & Post-Search Recommendations Layout -->
+<div class="row g-4">
+    <!-- Main Search Results Column -->
+    <div class="col-lg-8">
+        <div id="search-telemetry-bar" style="display: none; justify-content: space-between; align-items: center; margin-bottom: 1rem; font-size: 0.82rem; color: var(--text-muted);">
+            <div>
+                Found <strong id="search-match-count" style="color: var(--text-main);">0</strong> results in <strong id="search-latency" style="color: var(--text-accent);">0 ms</strong>
+            </div>
+            <div id="search-fa-status"></div>
+        </div>
+
+        <div id="search-results-list">
+            <div class="card-custom text-center" style="padding: 2.5rem 1rem;">
+                <i class="fas fa-magnifying-glass" style="font-size: 2.5rem; color: var(--text-muted); opacity: 0.4; margin-bottom: 1rem;"></i>
+                <h4 style="font-size: 1.05rem; color: var(--text-main);">Enter a query above to execute intelligent multi-model ranking</h4>
+                <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">
+                    Combines Query Likelihood, Vector Space TF-IDF, InL2 Divergence From Randomness, Structural PageRank, and Semantic Ontology.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Recommended for You -->
+    <div class="col-lg-4">
+        <div class="card-custom" style="position: sticky; top: 80px;">
+            <div class="card-title-custom">
+                <span><i class="fas fa-sparkles text-warning"></i> Recommended for You</span>
+            </div>
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1rem;">
+                Personalized recommendations dynamically synthesized from Collaborative, Content-Based, and Knowledge-Based filtering:
+            </p>
+
+            <div id="post-search-recs-container">
+                <p style="color: var(--text-muted); font-size: 0.82rem;">Execute a search to generate explainable recommendations.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function setQuery(q) {
+    document.getElementById("intelli-search-input").value = q;
+    executeIntelligentSearch();
+}
+
+function updateWeightLabels() {
+    document.getElementById("lbl-w-lm").innerText = document.getElementById("slider-w-lm").value;
+    document.getElementById("lbl-w-tfidf").innerText = document.getElementById("slider-w-tfidf").value;
+    document.getElementById("lbl-w-dfr").innerText = document.getElementById("slider-w-dfr").value;
+    document.getElementById("lbl-w-pr").innerText = document.getElementById("slider-w-pr").value;
+    document.getElementById("lbl-w-sem").innerText = document.getElementById("slider-w-sem").value;
+}
+
+function resetWeights() {
+    document.getElementById("slider-w-lm").value = 0.25;
+    document.getElementById("slider-w-tfidf").value = 0.25;
+    document.getElementById("slider-w-dfr").value = 0.20;
+    document.getElementById("slider-w-pr").value = 0.15;
+    document.getElementById("slider-w-sem").value = 0.15;
+    updateWeightLabels();
+}
+
+async function executeIntelligentSearch() {
+    const q = document.getElementById("intelli-search-input").value.trim();
+    if (!q) {
+        showToast("Enter a query to search.", "warning");
+        return;
+    }
+
+    const weights = {
+        w_lm: parseFloat(document.getElementById("slider-w-lm").value),
+        w_tfidf: parseFloat(document.getElementById("slider-w-tfidf").value),
+        w_dfr: parseFloat(document.getElementById("slider-w-dfr").value),
+        w_pagerank: parseFloat(document.getElementById("slider-w-pr").value),
+        w_semantic: parseFloat(document.getElementById("slider-w-sem").value)
+    };
+
+    const res = await apiPost("/api/search/intelligent", { query: q, weights: weights });
+    if (res.ok) {
+        const d = res.data;
+        document.getElementById("search-telemetry-bar").style.display = "flex";
+        document.getElementById("search-match-count").innerText = d.total_matches;
+        document.getElementById("search-latency").innerText = `${d.response_time_ms} ms`;
+        
+        const fa = d.automaton_analysis;
+        document.getElementById("search-fa-status").innerHTML = fa.accepted ? 
+            `<span class="badge-custom badge-success"><i class="fas fa-check"></i> Automaton Validated</span>` :
+            `<span class="badge-custom badge-warning"><i class="fas fa-triangle-exclamation"></i> Non-standard Grammar</span>`;
+
+        // Render ranked results
+        const rList = document.getElementById("search-results-list");
+        rList.innerHTML = "";
+
+        if (d.results.length === 0) {
+            rList.innerHTML = `<div class="card-custom"><p style="color: var(--text-muted);">No documents matched your query criteria.</p></div>`;
+        } else {
+            d.results.forEach(item => {
+                const sc = item.scores;
+                rList.innerHTML += `
+                    <div class="card-custom" style="padding: 1.25rem; margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                            <div>
+                                <span class="badge-custom badge-info" style="margin-bottom: 4px;">#${item.rank} &bull; ${item.category}</span>
+                                <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-main); margin: 0;">${item.title}</h3>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.2rem; font-weight: 800; color: var(--text-accent);">${(sc.composite * 100).toFixed(1)}%</div>
+                                <span style="font-size: 0.68rem; color: var(--text-muted);">Composite Score</span>
+                            </div>
+                        </div>
+
+                        <!-- Relevant Highlighted Passage -->
+                        <div style="padding: 10px 12px; background: var(--bg-secondary); border-left: 3px solid var(--primary); border-radius: 4px; font-size: 0.85rem; line-height: 1.55; margin: 0.75rem 0;">
+                            ${item.relevant_passage}
+                        </div>
+
+                        <!-- Multi-Model Score Breakdown Badges -->
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; font-size: 0.72rem; padding-top: 0.5rem; border-top: 1px solid var(--card-border);">
+                            <span class="badge-custom badge-info">LM: ${sc.lm_score}</span>
+                            <span class="badge-custom badge-info">TF-IDF: ${sc.tfidf_score}</span>
+                            <span class="badge-custom badge-warning">DFR: ${sc.dfr_score}</span>
+                            <span class="badge-custom badge-success">PageRank: ${sc.pagerank_score}</span>
+                            <span class="badge-custom badge-info">Semantic: ${sc.semantic_score}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Render Post-Search Recommendations
+        const recList = document.getElementById("post-search-recs-container");
+        recList.innerHTML = "";
+        d.post_search_recommendations.forEach(r => {
+            recList.innerHTML += `
+                <div style="padding: 12px; background: var(--bg-tertiary); border-radius: 8px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <strong style="font-size: 0.85rem; color: var(--text-main);">${r.title}</strong>
+                        <span class="badge-custom badge-warning" style="font-size: 0.68rem;">${r.badge}</span>
+                    </div>
+                    <div style="font-size: 0.72rem; color: var(--text-accent); margin-bottom: 4px;">${r.source_method}</div>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin: 0; line-height: 1.4;">${r.reason}</p>
+                </div>
+            `;
+        });
+    }
+}
+
+document.getElementById("btn-run-intelli-search").addEventListener("click", executeIntelligentSearch);
+document.getElementById("intelli-search-input").addEventListener("keypress", (e) => {
+    if (e.key === "Enter") executeIntelligentSearch();
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    // If query in URL or input, auto-run
+    const q = document.getElementById("intelli-search-input").value.trim();
+    if (q) executeIntelligentSearch();
+});
+</script>
+{% endblock %}

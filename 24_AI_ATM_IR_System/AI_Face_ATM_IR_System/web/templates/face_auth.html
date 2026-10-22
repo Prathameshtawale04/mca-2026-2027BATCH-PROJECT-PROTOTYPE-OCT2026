@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Biometric Face Registration & Training | AI Face ATM & IR System{% endblock %}
+{% block page_title %}Biometric Face Recognition & LBPH Training Lab{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Left Column: User Registration & Training Controls -->
+    <div class="col-lg-5 col-md-6">
+        <div class="card-custom">
+            <div class="card-title-custom">
+                <span><i class="fas fa-id-card text-accent"></i> User Registration & Setup</span>
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">ACCOUNT NUMBER</label>
+                <input type="text" id="reg-acc" placeholder="e.g. ACC2026" style="width: 100%; padding: 0.6rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">FULL NAME</label>
+                <input type="text" id="reg-name" placeholder="e.g. John Doe" style="width: 100%; padding: 0.6rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">EMAIL ADDRESS</label>
+                <input type="email" id="reg-email" placeholder="e.g. john.doe@bank.edu" style="width: 100%; padding: 0.6rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">4-DIGIT PIN</label>
+                <input type="password" id="reg-pin" placeholder="e.g. 4321" maxlength="6" style="width: 100%; padding: 0.6rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+            </div>
+
+            <button id="btn-register-user" class="btn-custom btn-primary-custom" style="width: 100%; justify-content: center; margin-bottom: 1rem;">
+                <i class="fas fa-user-plus"></i> Create Account
+            </button>
+
+            <!-- Progress Bar for Samples -->
+            <div style="border-top: 1px solid var(--card-border); padding-top: 1rem;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 0.5rem;">
+                    <span>Face Samples Collected:</span>
+                    <strong id="sample-count-text">0 / 35</strong>
+                </div>
+                <div style="width: 100%; height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden; margin-bottom: 1rem;">
+                    <div id="sample-progress-bar" style="width: 0%; height: 100%; background: var(--success); transition: width 0.3s ease;"></div>
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                    <button id="btn-capture-batch" class="btn-custom btn-outline-custom" style="flex: 1; justify-content: center;">
+                        <i class="fas fa-camera"></i> Capture 35 Samples
+                    </button>
+                    <button id="btn-train-lbph" class="btn-custom btn-success-custom" style="flex: 1; justify-content: center;">
+                        <i class="fas fa-gears"></i> Train LBPH Model
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Live Camera & Algorithmic Breakdown -->
+    <div class="col-lg-7 col-md-6">
+        <div class="card-custom">
+            <div class="card-title-custom">
+                <span><i class="fas fa-video text-success"></i> Live Video Feed & Haar Face Detector</span>
+                <span id="cam-active-badge" class="badge-custom badge-warning">Camera Inactive</span>
+            </div>
+
+            <div class="camera-box">
+                <video id="reg-video" autoplay playsinline muted></video>
+                <canvas id="reg-canvas" style="display: none;"></canvas>
+                <div class="camera-overlay">
+                    <div class="hud-target"></div>
+                    <div id="reg-hud-status" class="hud-status-bar">
+                        <span>Click 'Start Camera' to initialize capture</span>
+                        <span>OpenCV LBPH</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-top: 1rem; flex-wrap: wrap;">
+                <button id="btn-toggle-cam" class="btn-custom btn-primary-custom" style="flex: 1; justify-content: center;">
+                    <i class="fas fa-play"></i> Start Camera Feed
+                </button>
+                <button id="btn-test-verify" class="btn-custom btn-outline-custom" style="flex: 1; justify-content: center;">
+                    <i class="fas fa-shield-halved"></i> Test Biometric Match
+                </button>
+                <button id="btn-test-liveness" class="btn-custom btn-outline-custom" style="flex: 1; justify-content: center;">
+                    <i class="fas fa-fingerprint text-warning"></i> Anti-Spoofing Liveness
+                </button>
+            </div>
+
+            <!-- Optical Liveness Telemetry Box -->
+            <div id="liveness-telemetry-box" style="display: none; margin-top: 1rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; padding: 0.85rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <strong style="font-size: 0.88rem; color: var(--text-main);"><i class="fas fa-shield-halved text-info"></i> Optical Liveness Analysis</strong>
+                    <span id="liveness-score-badge" class="badge-custom badge-info">Score: --</span>
+                </div>
+                <div id="liveness-checks-list" style="font-size: 0.78rem; display: flex; flex-direction: column; gap: 4px;"></div>
+            </div>
+        </div>
+
+        <!-- Algorithm Explanation Card -->
+        <div class="card-custom">
+            <h4 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.75rem;">
+                <i class="fas fa-graduation-cap text-accent"></i> Academic Methodology & Configuration
+            </h4>
+            <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.6;">
+                <p>
+                    <strong>Face Detection:</strong> Frontal Haar feature-based cascade classifier detects facial bounding box <code>(x, y, w, h)</code>. The ROI is converted to grayscale, resized to 200&times;200 pixels, and normalized using histogram equalization.
+                </p>
+                <p>
+                    <strong>LBPH Recognizer:</strong> Uses <code>cv2.face.LBPHFaceRecognizer_create(radius=1, neighbors=8, grid_x=8, grid_y=8)</code>. Computes 64 spatial histograms concatenated into a feature vector.
+                </p>
+                <p>
+                    <strong>Confidence Interpretation:</strong> LBPH returns a Euclidean distance metric. Distance <code>&le; 70.0</code> is classified as authentic. Match confidence percentage is derived as:
+                    <code>Confidence = max(0, min(100, (1 - distance / 120) * 100))</code>.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let regCam = null;
+let captureInterval = null;
+
+document.addEventListener("DOMContentLoaded", () => {
+    regCam = new FaceCameraController("reg-video", "reg-canvas", "reg-hud-status");
+
+    document.getElementById("btn-toggle-cam").addEventListener("click", async () => {
+        const ok = await regCam.startCamera();
+        if (ok) {
+            document.getElementById("cam-active-badge").className = "badge-custom badge-success";
+            document.getElementById("cam-active-badge").innerText = "Camera Active";
+        }
+    });
+
+    document.getElementById("btn-register-user").addEventListener("click", async () => {
+        const acc = document.getElementById("reg-acc").value.trim().toUpperCase();
+        const name = document.getElementById("reg-name").value.trim();
+        const email = document.getElementById("reg-email").value.trim();
+        const pin = document.getElementById("reg-pin").value.trim();
+
+        if (!acc || !name || !email || !pin) {
+            showToast("Please fill all registration fields.", "warning");
+            return;
+        }
+
+        const res = await apiPost("/api/auth/register", {
+            account_number: acc,
+            full_name: name,
+            email: email,
+            pin: pin
+        });
+
+        if (res.ok && res.data.success) {
+            showToast(res.data.message, "success");
+        } else {
+            showToast(res.data.message || "Registration failed", "danger");
+        }
+    });
+
+    document.getElementById("btn-capture-batch").addEventListener("click", async () => {
+        const acc = document.getElementById("reg-acc").value.trim().toUpperCase();
+        if (!acc) {
+            showToast("Enter an account number first.", "warning");
+            return;
+        }
+
+        let samplesCaptured = 0;
+        showToast("Starting face sample capture. Keep face centered...", "info");
+
+        captureInterval = setInterval(async () => {
+            const frameB64 = regCam.captureFrameBase64();
+            if (frameB64) {
+                const res = await apiPost("/api/auth/save_sample", {
+                    account_number: acc,
+                    image_data: frameB64
+                });
+
+                if (res.ok && res.data.success) {
+                    samplesCaptured = res.data.total_samples;
+                    const pct = Math.min(100, Math.round((samplesCaptured / 35) * 100));
+                    document.getElementById("sample-count-text").innerText = `${samplesCaptured} / 35`;
+                    document.getElementById("sample-progress-bar").style.width = `${pct}%`;
+
+                    if (samplesCaptured >= 35) {
+                        clearInterval(captureInterval);
+                        showToast("Successfully captured 35 samples! Now click 'Train LBPH Model'.", "success");
+                    }
+                }
+            }
+        }, 300);
+    });
+
+    document.getElementById("btn-train-lbph").addEventListener("click", async () => {
+        const acc = document.getElementById("reg-acc").value.trim().toUpperCase();
+        if (!acc) {
+            showToast("Enter an account number.", "warning");
+            return;
+        }
+
+        showToast("Training LBPH model with Haar face crops...", "info");
+        const res = await apiPost("/api/auth/train_model", { account_number: acc });
+        if (res.ok && res.data.success) {
+            showToast(res.data.message, "success");
+        } else {
+            showToast(res.data.message || "Training error", "danger");
+        }
+    });
+
+    document.getElementById("btn-test-verify").addEventListener("click", () => {
+        const acc = document.getElementById("reg-acc").value.trim().toUpperCase() || "ACC1001";
+        regCam.startVerificationLoop(acc, (data) => {
+            showToast(`Biometric Test PASSED! Confidence: ${data.confidence_score}% (Distance: ${data.distance})`, "success");
+        });
+    });
+
+    document.getElementById("btn-test-liveness").addEventListener("click", async () => {
+        const frameB64 = regCam.captureFrameBase64();
+        if (!frameB64) {
+            showToast("Camera feed is not running. Please start camera first.", "warning");
+            return;
+        }
+        showToast("Analyzing optical liveness & anti-spoofing metrics...", "info");
+        const res = await apiPost("/api/auth/verify_liveness", { image_data: frameB64 });
+        if (res.ok && res.data.success) {
+            const r = res.data.liveness;
+            const box = document.getElementById("liveness-telemetry-box");
+            box.style.display = "block";
+            const badge = document.getElementById("liveness-score-badge");
+            badge.className = r.is_live ? "badge-custom badge-success" : "badge-custom badge-danger";
+            badge.textContent = `${r.verdict} (${r.liveness_score}%)`;
+
+            let html = "";
+            r.checks.forEach(c => {
+                html += `
+                    <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <span>${c.test}: <strong style="color: ${c.passed ? 'var(--success)' : 'var(--danger)'};">${c.score}</strong> (${c.threshold})</span>
+                        <span style="color: ${c.passed ? '#34d399' : '#f87171'}; font-weight: 600;">${c.passed ? 'PASSED' : 'FLAGGED'}</span>
+                    </div>
+                `;
+            });
+            document.getElementById("liveness-checks-list").innerHTML = html;
+        } else {
+            showToast(res.data.message || "Failed to analyze liveness", "danger");
+        }
+    });
+});
+</script>
+{% endblock %}

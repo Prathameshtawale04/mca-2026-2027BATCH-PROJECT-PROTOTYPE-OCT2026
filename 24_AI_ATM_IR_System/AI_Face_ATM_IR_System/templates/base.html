@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Intelligent Face Recognition ATM & IR System{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <!-- Custom Theme CSS -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 270px;
+            --sidebar-collapsed-width: 78px;
+            --topbar-height: 64px;
+            --bg-dark-base: #0a0f1d;
+            --bg-dark-surface: #111827;
+            --bg-dark-card: #1f2937;
+            --accent-cyan: #06b6d4;
+            --accent-blue: #3b82f6;
+            --text-main: #f9fafb;
+            --text-muted: #9ca3af;
+            --border-subtle: #374151;
+        }
+        body {
+            background-color: var(--bg-dark-base);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        #sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: linear-gradient(180deg, #0e1726 0%, #080d1a 100%);
+            border-right: 1px solid var(--border-subtle);
+            z-index: 1040;
+            transition: all 0.25s ease-in-out;
+            display: flex;
+            flex-direction: column;
+        }
+        #sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+        #sidebar .brand {
+            height: var(--topbar-height);
+            display: flex;
+            align-items: center;
+            padding: 0 1.25rem;
+            border-bottom: 1px solid var(--border-subtle);
+            gap: 0.75rem;
+        }
+        #sidebar.collapsed .brand-text {
+            display: none;
+        }
+        #sidebar .nav-menu {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.75rem 0.5rem;
+        }
+        .nav-item-custom {
+            display: flex;
+            align-items: center;
+            padding: 0.65rem 0.95rem;
+            color: #d1d5db;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 0.25rem;
+            font-size: 0.88rem;
+            font-weight: 500;
+            transition: all 0.15s ease;
+            gap: 0.85rem;
+        }
+        .nav-item-custom:hover {
+            color: #ffffff;
+            background: rgba(59, 130, 246, 0.15);
+        }
+        .nav-item-custom.active {
+            color: #ffffff;
+            background: linear-gradient(90deg, #2563eb, #1d4ed8);
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        .nav-item-custom i {
+            font-size: 1.1rem;
+            width: 22px;
+            text-align: center;
+            color: var(--accent-cyan);
+        }
+        .nav-item-custom.active i {
+            color: #ffffff;
+        }
+        #sidebar.collapsed .nav-text,
+        #sidebar.collapsed .badge-pill {
+            display: none;
+        }
+        .sidebar-section-header {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #6b7280;
+            padding: 0.75rem 0.95rem 0.35rem;
+            font-weight: 700;
+        }
+        #sidebar.collapsed .sidebar-section-header {
+            display: none;
+        }
+        #main-wrapper {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left 0.25s ease-in-out;
+        }
+        #main-wrapper.expanded {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+        #topbar {
+            height: var(--topbar-height);
+            background: rgba(17, 24, 39, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-subtle);
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.5rem;
+        }
+        .content-body {
+            padding: 1.75rem 1.5rem 3rem;
+            flex: 1;
+        }
+        .card-custom {
+            background-color: var(--bg-dark-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            padding: 1.5rem;
+        }
+        .badge-cyber {
+            background: rgba(6, 182, 212, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            font-weight: 600;
+            padding: 0.35em 0.7em;
+            border-radius: 6px;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+    <!-- Persistent Collapsible Sidebar -->
+    <aside id="sidebar">
+        <div class="brand">
+            <i class="fas fa-shield-halved text-info fs-4"></i>
+            <div class="brand-text">
+                <div class="fw-bold lh-1 text-white" style="font-size: 0.98rem; letter-spacing: -0.01em;">Mira AI ATM</div>
+                <small class="text-secondary" style="font-size: 0.72rem;">Security &amp; IR System</small>
+            </div>
+        </div>
+
+        <nav class="nav-menu">
+            <div class="sidebar-section-header">Core Banking &amp; Security</div>
+            <a href="{{ url_for('main.dashboard') }}" class="nav-item-custom {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
+                <i class="fas fa-gauge-high"></i>
+                <span class="nav-text">1. Dashboard</span>
+            </a>
+            <a href="/face/register" class="nav-item-custom {% if 'face/register' in request.path %}active{% endif %}">
+                <i class="fas fa-camera"></i>
+                <span class="nav-text">2. Face Registration</span>
+            </a>
+            <a href="/face/verify" class="nav-item-custom {% if 'face/verify' in request.path %}active{% endif %}">
+                <i class="fas fa-user-check"></i>
+                <span class="nav-text">3. Face Verification</span>
+            </a>
+            <a href="/atm" class="nav-item-custom {% if request.path.startswith('/atm') %}active{% endif %}">
+                <i class="fas fa-money-bill-transfer"></i>
+                <span class="nav-text">4. ATM Simulator</span>
+            </a>
+            <a href="/finance" class="nav-item-custom {% if request.path.startswith('/finance') %}active{% endif %}">
+                <i class="fas fa-chart-pie"></i>
+                <span class="nav-text">5. Financial Assistance</span>
+            </a>
+
+            <div class="sidebar-section-header">Information Retrieval Units</div>
+            <a href="/ir/language-models" class="nav-item-custom {% if 'language-models' in request.path %}active{% endif %}">
+                <i class="fas fa-brain"></i>
+                <span class="nav-text">6. Language Models (IV)</span>
+            </a>
+            <a href="/ir/web-retrieval" class="nav-item-custom {% if 'web-retrieval' in request.path %}active{% endif %}">
+                <i class="fas fa-spider"></i>
+                <span class="nav-text">7. Web &amp; Crawling (V)</span>
+            </a>
+            <a href="/ir/applications" class="nav-item-custom {% if 'applications' in request.path %}active{% endif %}">
+                <i class="fas fa-diagram-project"></i>
+                <span class="nav-text">8. IR Applications (VI)</span>
+            </a>
+
+            <div class="sidebar-section-header">Search &amp; Operations</div>
+            <a href="/search/hybrid" class="nav-item-custom {% if 'hybrid' in request.path %}active{% endif %}">
+                <i class="fas fa-magnifying-glass"></i>
+                <span class="nav-text">9. Hybrid Search</span>
+            </a>
+            <a href="/search/history" class="nav-item-custom {% if 'history' in request.path %}active{% endif %}">
+                <i class="fas fa-clock-rotate-left"></i>
+                <span class="nav-text">10. Search History / Reports</span>
+            </a>
+            {% if current_user.role == 'admin' %}
+            <div class="sidebar-section-header text-danger"><i class="fas fa-shield-halved me-1"></i> SOC Administration</div>
+            <a href="/admin" class="nav-item-custom {% if request.path.startswith('/admin') %}active{% endif %}">
+                <i class="fas fa-user-shield text-danger"></i>
+                <span class="nav-text">Security Admin SOC</span>
+                <span class="badge bg-danger ms-auto badge-pill" style="font-size: 0.65rem;">ADMIN</span>
+            </a>
+            {% endif %}
+            <a href="{{ url_for('auth.logout') }}" class="nav-item-custom text-danger">
+                <i class="fas fa-arrow-right-from-bracket text-danger"></i>
+                <span class="nav-text">12. Logout</span>
+            </a>
+        </nav>
+
+        <div class="p-3 border-top border-secondary-subtle d-flex align-items-center gap-2">
+            <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width: 34px; height: 34px; font-size: 0.85rem;">
+                {{ (current_user.full_name or 'User')[0] }}
+            </div>
+            <div class="small text-truncate flex-1">
+                <div class="fw-semibold text-white text-truncate">{{ current_user.full_name or 'Guest' }}</div>
+                <div class="text-muted" style="font-size: 0.72rem;">{{ current_user.account_number or 'No Account' }}</div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Layout -->
+    <div id="main-wrapper">
+        <!-- Top Navigation Bar -->
+        <header id="topbar">
+            <div class="d-flex align-items-center gap-3">
+                <button id="sidebar-toggle" class="btn btn-sm btn-outline-secondary text-light border-0">
+                    <i class="fas fa-bars fs-5"></i>
+                </button>
+                <div class="d-none d-md-block">
+                    <ol class="breadcrumb mb-0" style="font-size: 0.82rem;">
+                        <li class="breadcrumb-item"><a href="{{ url_for('main.dashboard') }}" class="text-secondary text-decoration-none">Home</a></li>
+                        <li class="breadcrumb-item active text-info" aria-current="page">{% block breadcrumb %}Dashboard{% endblock %}</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+                {% if current_user.is_authenticated %}
+                    <span class="badge-cyber d-none d-sm-inline-flex align-items-center gap-2">
+                        <i class="fas fa-wallet text-info"></i>
+                        <span>${{ '%.2f'|format(current_user.balance) }}</span>
+                    </span>
+                    <span class="badge {% if current_user.role == 'admin' %}bg-danger{% else %}bg-primary{% endif %} text-uppercase px-2 py-1" style="font-size: 0.7rem; font-weight: 700;">
+                        {{ current_user.role }}
+                    </span>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-sm btn-primary">Sign In</a>
+                {% endif %}
+            </div>
+        </header>
+
+        <!-- Page Flash Alerts -->
+        <div class="container-fluid px-4 pt-3">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show d-flex align-items-center gap-2 py-2" role="alert">
+                            {% if category == 'danger' %}
+                                <i class="fas fa-circle-exclamation text-danger"></i>
+                            {% elif category == 'success' %}
+                                <i class="fas fa-circle-check text-success"></i>
+                            {% elif category == 'warning' %}
+                                <i class="fas fa-triangle-exclamation text-warning"></i>
+                            {% else %}
+                                <i class="fas fa-circle-info text-info"></i>
+                            {% endif %}
+                            <div class="small fw-medium">{{ message }}</div>
+                            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close" style="padding: 0.75rem;"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Dynamic Body Content -->
+        <main class="content-body">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- Footer -->
+        <footer class="mt-auto py-3 px-4 border-top border-secondary-subtle text-secondary small d-flex flex-wrap justify-content-between align-items-center">
+            <div>
+                &copy; 2026 Mira AI Face ATM &amp; IR System &bull; SPPU MCA Final-Year Project
+            </div>
+            <div class="d-flex gap-3">
+                <span class="badge bg-dark border border-secondary text-secondary">Flask 3.1</span>
+                <span class="badge bg-dark border border-secondary text-secondary">OpenCV LBPH</span>
+                <span class="badge bg-dark border border-secondary text-secondary">SQLite ACID</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Sidebar toggle logic
+        const toggleBtn = document.getElementById('sidebar-toggle');
+        const sidebar = document.getElementById('sidebar');
+        const wrapper = document.getElementById('main-wrapper');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            wrapper.classList.toggle('expanded');
+        });
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,754 @@
+/* AI-Based Face Recognition ATM Security & Intelligent IR System
+   Modern Professional Theme System (Dark & Light)
+*/
+
+:root {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --card-bg: rgba(30, 41, 59, 0.85);
+  --card-border: rgba(148, 163, 184, 0.15);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-accent: #38bdf8;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --success: #10b981;
+  --success-glow: rgba(16, 185, 129, 0.25);
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --sidebar-width: 270px;
+  --atm-gold: #f59e0b;
+  --hud-color: #00ff88;
+}
+
+[data-theme="light"] {
+  --bg-primary: #f1f5f9;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e2e8f0;
+  --card-bg: rgba(255, 255, 255, 0.9);
+  --card-border: rgba(0, 0, 0, 0.1);
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-accent: #0284c7;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --success: #059669;
+  --success-glow: rgba(5, 150, 105, 0.2);
+  --danger: #dc2626;
+  --warning: #d97706;
+  --hud-color: #059669;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* App Layout */
+.app-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+.app-sidebar {
+  width: var(--sidebar-width);
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--card-border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  padding: 1.5rem 1.25rem;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: var(--text-main);
+}
+
+.brand-icon {
+  font-size: 1.75rem;
+  color: var(--text-accent);
+}
+
+.brand-text h1 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+
+.brand-badge {
+  font-size: 0.68rem;
+  background-color: rgba(56, 189, 248, 0.15);
+  color: var(--text-accent);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.sidebar-nav {
+  padding: 1rem 0;
+  flex: 1;
+}
+
+.nav-section-title {
+  padding: 0.5rem 1.25rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1.25rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-left: 3px solid transparent;
+}
+
+.nav-item:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-main);
+}
+
+.nav-item.active {
+  background-color: rgba(37, 99, 235, 0.12);
+  color: var(--text-accent);
+  border-left-color: var(--primary);
+  font-weight: 600;
+}
+
+.nav-item i {
+  font-size: 1.1rem;
+  width: 20px;
+  text-align: center;
+}
+
+.sidebar-footer {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--card-border);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Main Content Area */
+.app-main {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Top Navbar */
+.top-navbar {
+  height: 64px;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--card-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.75rem;
+  position: sticky;
+  top: 0;
+  z-index: 900;
+}
+
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: var(--bg-tertiary);
+  padding: 0.35rem 0.8rem;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.user-badge .status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--success);
+  box-shadow: 0 0 8px var(--success);
+}
+
+/* Page Content */
+.content-container {
+  padding: 1.75rem;
+  flex: 1;
+}
+
+/* Glassmorphism Cards */
+.card-custom {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  margin-bottom: 1.5rem;
+}
+
+.card-title-custom {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+/* Metric Stats Cards */
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+}
+
+.stat-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+.stat-icon.blue { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+.stat-icon.green { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.stat-icon.purple { background: rgba(168, 85, 247, 0.15); color: #a855f7; }
+.stat-icon.amber { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+
+.stat-info h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.stat-info p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Custom Buttons */
+.btn-custom {
+  padding: 0.55rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.btn-primary-custom {
+  background-color: var(--primary);
+  color: #ffffff;
+}
+
+.btn-primary-custom:hover {
+  background-color: var(--primary-hover);
+  color: #ffffff;
+}
+
+.btn-success-custom {
+  background-color: var(--success);
+  color: #ffffff;
+}
+
+.btn-outline-custom {
+  background: transparent;
+  border: 1px solid var(--card-border);
+  color: var(--text-main);
+}
+
+.btn-outline-custom:hover {
+  background-color: var(--bg-tertiary);
+  color: var(--text-main);
+}
+
+/* Camera HUD Overlay */
+.camera-box {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  height: 360px;
+  background-color: #000000;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid var(--card-border);
+  margin: 0 auto;
+}
+
+.camera-box video, .camera-box canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.camera-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.hud-target {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 200px;
+  height: 240px;
+  border: 2px dashed rgba(0, 255, 136, 0.4);
+  border-radius: 100px;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.2);
+}
+
+.hud-status-bar {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  padding: 8px 12px;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: var(--hud-color);
+}
+
+/* Passage Keyword Highlighting */
+.passage-highlight {
+  background-color: rgba(245, 158, 11, 0.35);
+  color: #fef08a;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: 600;
+}
+
+/* Interactive Graph Container */
+.graph-container {
+  width: 100%;
+  height: 480px;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+}
+
+/* ATM Terminal Keypad */
+.atm-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  max-width: 280px;
+  margin: 1rem auto;
+}
+
+.keypad-btn {
+  padding: 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  background-color: var(--bg-tertiary);
+  color: var(--text-main);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.keypad-btn:hover {
+  background-color: var(--primary);
+  color: #ffffff;
+}
+
+/* Custom Table */
+.table-custom {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-custom th {
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-tertiary);
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: left;
+}
+
+.table-custom td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--card-border);
+  font-size: 0.88rem;
+}
+
+.table-custom tr:hover {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Badges */
+.badge-custom {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.badge-info { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+.badge-success { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+.badge-warning { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+.badge-danger { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+
+/* Academic Prototype Notice Banner */
+.academic-notice {
+  background: linear-gradient(90deg, #1e3a8a, #0f172a);
+  border-left: 4px solid var(--primary);
+  padding: 0.75rem 1.25rem;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  color: #bfdbfe;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+/* Toasts */
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.toast-msg {
+  min-width: 280px;
+  max-width: 400px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--card-border);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ==========================================================================
+   Mira AI ATM High-Tech Keypad, Cash Tray & Chat Styling
+   ========================================================================== */
+
+/* Tactile ATM Numeric Keypad */
+.keypad-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.keypad-btn {
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  color: var(--text-main);
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  border-radius: 8px;
+  padding: 14px 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transition: all 0.12s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.keypad-btn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: #38bdf8;
+  color: #38bdf8;
+  transform: translateY(-2px);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+}
+
+.keypad-btn:active {
+  transform: translateY(1px);
+  background: rgba(0, 245, 212, 0.3);
+  border-color: #00f5d4;
+}
+
+.keypad-btn.action-clear {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #f87171;
+  font-size: 0.9rem;
+}
+
+.keypad-btn.action-clear:hover {
+  background: rgba(239, 68, 68, 0.35);
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+}
+
+.keypad-btn.action-enter {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #34d399;
+  font-size: 0.9rem;
+}
+
+.keypad-btn.action-enter:hover {
+  background: rgba(16, 185, 129, 0.35);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+}
+
+/* Modal Overlay & Animated Cash Dispenser Tray */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 8, 17, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content-custom {
+  background: #0f172a;
+  border: 1px solid rgba(0, 245, 212, 0.4);
+  box-shadow: 0 0 35px rgba(0, 245, 212, 0.2), 0 20px 40px rgba(0, 0, 0, 0.8);
+  border-radius: 18px;
+  padding: 28px;
+  width: 100%;
+  max-width: 500px;
+  text-align: center;
+  position: relative;
+  animation: scaleUp 0.25s ease;
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.cash-tray {
+  background: #090e1d;
+  border: 2px dashed rgba(0, 245, 212, 0.5);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 18px 0;
+  box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+.cash-bill-stack {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.cash-bill {
+  background: linear-gradient(135deg, #064e3b, #047857);
+  border: 1px solid #10b981;
+  color: #a7f3d0;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+  font-size: 1.1rem;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+  transform: rotate(-1deg);
+  transition: transform 0.2s ease;
+}
+
+.cash-bill:hover {
+  transform: rotate(0deg) scale(1.05);
+}
+
+/* Mira AI Copilot Chat Window */
+.mira-chat-card {
+  display: flex;
+  flex-direction: column;
+  height: 440px;
+  background: var(--bg-secondary);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.mira-chat-header {
+  padding: 12px 18px;
+  background: rgba(15, 23, 42, 0.9);
+  border-bottom: 1px solid var(--card-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mira-chat-messages {
+  flex: 1;
+  padding: 16px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.chat-bubble-mira {
+  align-self: flex-start;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(0, 245, 212, 0.3);
+  color: var(--text-main);
+  padding: 12px 16px;
+  border-radius: 12px 12px 12px 2px;
+  max-width: 85%;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.chat-bubble-user {
+  align-self: flex-end;
+  background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  color: #ffffff;
+  padding: 10px 14px;
+  border-radius: 12px 12px 2px 12px;
+  max-width: 80%;
+  font-size: 0.84rem;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+.quick-action-pill {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+  font-size: 0.74rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.quick-action-pill:hover {
+  background: rgba(56, 189, 248, 0.25);
+  border-color: #38bdf8;
+  transform: translateY(-1px);
+}
+
+.quick-action-pill.danger-pill {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+
+.quick-action-pill.danger-pill:hover {
+  background: rgba(239, 68, 68, 0.3);
+}
+
+.mira-chat-input-bar {
+  padding: 10px 14px;
+  background: rgba(15, 23, 42, 0.9);
+  border-top: 1px solid var(--card-border);
+  display: flex;
+  gap: 8px;
+}
+
+/* 50/30/20 Wealth Visualizer */
+.budget-visualizer {
+  display: flex;
+  height: 14px;
+  border-radius: 7px;
+  overflow: hidden;
+  margin: 12px 0;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.budget-bar-needs { background: #3b82f6; width: 50%; }
+.budget-bar-wants { background: #8b5cf6; width: 30%; }
+.budget-bar-savings { background: #10b981; width: 20%; }

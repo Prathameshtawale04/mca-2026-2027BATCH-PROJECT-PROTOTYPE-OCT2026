@@ -1,0 +1,499 @@
+{% extends "base.html" %}
+
+{% block title %}Web Retrieval & Crawling | AI Face ATM & IR System{% endblock %}
+{% block page_title %}Web Retrieval, Distributed Systems & Web Crawling{% endblock %}
+
+{% block content %}
+<!-- Module Tabs -->
+<div class="card-custom mb-4" style="padding: 0.75rem 1rem;">
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="btn-custom btn-primary-custom web-tab-trigger active" onclick="showWebTab('wtab-parallel', this)">
+            <i class="fas fa-microchip"></i> Parallel IR
+        </button>
+        <button class="btn-custom btn-outline-custom web-tab-trigger" onclick="showWebTab('wtab-mapreduce', this)">
+            <i class="fas fa-shuffle"></i> MapReduce Engine
+        </button>
+        <button class="btn-custom btn-outline-custom web-tab-trigger" onclick="showWebTab('wtab-inverted', this)">
+            <i class="fas fa-boxes-stacked"></i> Inverted Index
+        </button>
+        <button class="btn-custom btn-outline-custom web-tab-trigger" onclick="showWebTab('wtab-cluster', this)">
+            <i class="fas fa-server"></i> Cluster & Distributed
+        </button>
+        <button class="btn-custom btn-outline-custom web-tab-trigger" onclick="showWebTab('wtab-pagerank', this)">
+            <i class="fas fa-diagram-project"></i> PageRank & Link Graph
+        </button>
+        <button class="btn-custom btn-outline-custom web-tab-trigger" onclick="showWebTab('wtab-compare', this)">
+            <i class="fas fa-scale-balanced"></i> Ranking Benchmark
+        </button>
+        <button class="btn-custom btn-outline-custom web-tab-trigger" onclick="showWebTab('wtab-crawler', this)">
+            <i class="fas fa-spider"></i> Web Crawler (BS4 & Scrapy)
+        </button>
+    </div>
+</div>
+
+<!-- 1. Parallel IR Tab -->
+<div id="wtab-parallel" class="web-tab-content">
+    <div class="card-custom">
+        <div class="card-title-custom">
+            <span><i class="fas fa-bolt text-accent"></i> Parallel Information Retrieval Coordinator</span>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Shards query execution across 3 virtual search nodes concurrently using Python <code>concurrent.futures.ThreadPoolExecutor</code>.
+        </p>
+        <div class="row g-3 mb-3">
+            <div class="col-md-10">
+                <input type="text" id="parallel-query-input" value="biometric authentication ATM security" style="width: 100%; padding: 0.65rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+            </div>
+            <div class="col-md-2">
+                <button id="btn-run-parallel" class="btn-custom btn-primary-custom" style="width: 100%; justify-content: center;">Run Parallel</button>
+            </div>
+        </div>
+
+        <div id="parallel-telemetry" style="display: none; margin-bottom: 1rem;">
+            <div class="row g-3" id="parallel-node-cards"></div>
+        </div>
+
+        <div id="parallel-results"></div>
+    </div>
+</div>
+
+<!-- 2. MapReduce Tab -->
+<div id="wtab-mapreduce" class="web-tab-content" style="display: none;">
+    <div class="card-custom">
+        <div class="card-title-custom">
+            <span><i class="fas fa-code-merge text-warning"></i> MapReduce Inverted Index Simulation</span>
+            <button id="btn-run-mr" class="btn-custom btn-primary-custom"><i class="fas fa-play"></i> Execute MapReduce</button>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Simulates the Google MapReduce architecture: <code>Mapper: (doc_id, text) &rarr; (term, 1)</code> &bull; <code>Shuffle: group by term</code> &bull; <code>Reducer: term &rarr; posting list</code>.
+        </p>
+        <div id="mr-output-container">
+            <p style="color: var(--text-muted); font-size: 0.88rem;">Click 'Execute MapReduce' to process documents through the mapper, shuffle, and reducer pipeline.</p>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Inverted Index Tab -->
+<div id="wtab-inverted" class="web-tab-content" style="display: none;">
+    <div class="card-custom">
+        <div class="card-title-custom">
+            <span><i class="fas fa-table-list text-info"></i> Search Engine Inverted Index Inspector</span>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="inverted-filter-input" placeholder="Filter term (e.g. face)" style="padding: 0.4rem 0.8rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main); font-size: 0.82rem;">
+                <button id="btn-filter-index" class="btn-custom btn-outline-custom" style="padding: 0.4rem 0.8rem;"><i class="fas fa-filter"></i> Filter</button>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Term</th>
+                        <th>Document Frequency (DF)</th>
+                        <th>Posting List (doc_id, Term Frequency, Sample Positions)</th>
+                    </tr>
+                </thead>
+                <tbody id="inverted-index-body">
+                    <tr><td colspan="3" style="text-align: center; color: var(--text-muted);">Loading index...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 4. Cluster & Distributed Search Tab -->
+<div id="wtab-cluster" class="web-tab-content" style="display: none;">
+    <div class="row g-4">
+        <!-- Cluster Search -->
+        <div class="col-lg-6">
+            <div class="card-custom">
+                <div class="card-title-custom">
+                    <span><i class="fas fa-cubes text-accent"></i> Cluster-Based Search</span>
+                </div>
+                <p style="font-size: 0.82rem; color: var(--text-muted);">
+                    Organizes corpus into 3 clusters: <strong>Security</strong>, <strong>Banking</strong>, and <strong>IR Technology</strong>.
+                </p>
+                <div style="display: flex; gap: 8px; margin-bottom: 1rem;">
+                    <input type="text" id="cluster-query-input" value="ATM withdrawal balance" style="flex: 1; padding: 0.6rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+                    <button id="btn-run-cluster" class="btn-custom btn-primary-custom">Route Query</button>
+                </div>
+                <div id="cluster-output"></div>
+            </div>
+        </div>
+
+        <!-- Distributed Search -->
+        <div class="col-lg-6">
+            <div class="card-custom">
+                <div class="card-title-custom">
+                    <span><i class="fas fa-network-wired text-success"></i> Distributed Multi-Node Search</span>
+                </div>
+                <p style="font-size: 0.82rem; color: var(--text-muted);">
+                    Simulates Coordinator routing query across Node Alpha, Beta, and Gamma shards with score fusion.
+                </p>
+                <div style="display: flex; gap: 8px; margin-bottom: 1rem;">
+                    <input type="text" id="dist-query-input" value="face recognition biometrics" style="flex: 1; padding: 0.6rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+                    <button id="btn-run-dist" class="btn-custom btn-success-custom">Distributed Search</button>
+                </div>
+                <div id="dist-output"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 5. PageRank Tab -->
+<div id="wtab-pagerank" class="web-tab-content" style="display: none;">
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card-custom">
+                <div class="card-title-custom">
+                    <span><i class="fas fa-calculator text-warning"></i> Custom PageRank Power Iteration</span>
+                </div>
+                <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Iterative calculation: <code>PR(p) = (1-d)/N + d &sum; (PR(q) / Out(q))</code> with handling for dangling nodes.
+                </p>
+                <div style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">DAMPING FACTOR (d)</label>
+                    <input type="range" id="pr-damping" min="0.5" max="0.99" step="0.05" value="0.85" style="width: 100%;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
+                        <span>0.50</span><span id="pr-damping-val">0.85</span><span>0.99</span>
+                    </div>
+                </div>
+                <button id="btn-run-pagerank" class="btn-custom btn-primary-custom" style="width: 100%; justify-content: center; margin-bottom: 1rem;">
+                    <i class="fas fa-rotate"></i> Compute PageRank
+                </button>
+                <div id="pr-summary-stats" style="font-size: 0.82rem; color: var(--text-muted);"></div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card-custom">
+                <div class="card-title-custom">
+                    <span><i class="fas fa-circle-nodes text-accent"></i> Interactive Hyperlink Network Graph</span>
+                    <span class="badge-custom badge-info">Vis.js Canvas</span>
+                </div>
+                <div id="pagerank-network" class="graph-container"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 6. Ranking Benchmark Tab -->
+<div id="wtab-compare" class="web-tab-content" style="display: none;">
+    <div class="card-custom">
+        <div class="card-title-custom">
+            <span><i class="fas fa-chart-column text-accent"></i> Simple Ranking Functions vs. Combined PageRank Benchmark</span>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Direct side-by-side comparison of <strong>TF</strong>, <strong>IDF</strong>, <strong>TF-IDF</strong>, <strong>Cosine Similarity</strong>, <strong>PageRank</strong>, and <strong>Combined Fusion</strong>.
+        </p>
+        <div class="row g-3 mb-3">
+            <div class="col-md-10">
+                <input type="text" id="compare-query-input" value="ATM security face recognition" style="width: 100%; padding: 0.65rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+            </div>
+            <div class="col-md-2">
+                <button id="btn-run-compare" class="btn-custom btn-primary-custom" style="width: 100%; justify-content: center;">Benchmark</button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table-custom">
+                <thead>
+                    <tr>
+                        <th>Ranking Model</th>
+                        <th>Precision</th>
+                        <th>Recall</th>
+                        <th>F1-Score</th>
+                        <th>Precision@3</th>
+                        <th>Mean Average Precision (MAP)</th>
+                    </tr>
+                </thead>
+                <tbody id="compare-table-body">
+                    <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Click 'Benchmark' to execute comparative evaluations.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- 7. Web Crawler Tab -->
+<div id="wtab-crawler" class="web-tab-content" style="display: none;">
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="card-custom">
+                <div class="card-title-custom">
+                    <span><i class="fas fa-spider text-info"></i> Polite BeautifulSoup Web Crawler</span>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">SEED URL</label>
+                    <input type="text" id="crawl-seed-url" value="https://academic-atm.local/security" style="width: 100%; padding: 0.6rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+                </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <label style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">MAX DEPTH</label>
+                        <input type="number" id="crawl-depth" value="2" min="1" max="3" style="width: 100%; padding: 0.6rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+                    </div>
+                    <div class="col-6">
+                        <label style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">MAX PAGES</label>
+                        <input type="number" id="crawl-pages" value="4" min="1" max="10" style="width: 100%; padding: 0.6rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+                    </div>
+                </div>
+                <button id="btn-run-crawl" class="btn-custom btn-primary-custom" style="width: 100%; justify-content: center;">
+                    <i class="fas fa-play"></i> Start Polite Crawl
+                </button>
+            </div>
+
+            <!-- Scrapy Project Card -->
+            <div class="card-custom mt-3">
+                <div class="card-title-custom">
+                    <span><i class="fas fa-terminal text-success"></i> Scrapy Crawler Project</span>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">
+                    A full Scrapy project structure is bundled in <code>web_retrieval/scrapy_crawler/</code>.
+                </p>
+                <div style="background: var(--bg-primary); padding: 10px; border-radius: 6px; font-family: monospace; font-size: 0.8rem;">
+                    cd web_retrieval/scrapy_crawler<br>
+                    scrapy crawl security_spider -o output.json
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card-custom">
+                <div class="card-title-custom">
+                    <span><i class="fas fa-list-check text-success"></i> Harvested Web Pages</span>
+                </div>
+                <div id="crawl-results-container">
+                    <p style="color: var(--text-muted); font-size: 0.88rem;">Click 'Start Polite Crawl' to harvest pages, parse DOM, and extract hyperlinks.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let prNetwork = null;
+
+function showWebTab(tabId, btn) {
+    document.querySelectorAll(".web-tab-content").forEach(el => el.style.display = "none");
+    document.getElementById(tabId).style.display = "block";
+    document.querySelectorAll(".web-tab-trigger").forEach(b => {
+        b.className = "btn-custom btn-outline-custom web-tab-trigger";
+    });
+    btn.className = "btn-custom btn-primary-custom web-tab-trigger active";
+
+    if (tabId === "wtab-inverted") loadInvertedIndex();
+    if (tabId === "wtab-pagerank") loadPageRank();
+}
+
+// 1. Parallel IR
+document.getElementById("btn-run-parallel").addEventListener("click", async () => {
+    const q = document.getElementById("parallel-query-input").value.trim();
+    const res = await apiPost("/api/web/parallel", { query: q });
+    if (res.ok) {
+        document.getElementById("parallel-telemetry").style.display = "block";
+        const nodeCards = document.getElementById("parallel-node-cards");
+        nodeCards.innerHTML = "";
+        res.data.node_reports.forEach(node => {
+            nodeCards.innerHTML += `
+                <div class="col-md-4">
+                    <div style="background: var(--bg-secondary); border: 1px solid var(--card-border); padding: 12px; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <strong>${node.node_id}</strong>
+                            <span class="badge-custom badge-info">${node.latency_ms} ms</span>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Shard Size: ${node.docs_in_shard} documents</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        const c = document.getElementById("parallel-results");
+        c.innerHTML = `<h4 style="font-size: 0.95rem; margin: 1rem 0 0.5rem;">Aggregated Results (${res.data.total_latency_ms} ms total coordinator time)</h4>`;
+        res.data.final_results.forEach(item => {
+            c.innerHTML += `
+                <div style="padding: 10px; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; margin-bottom: 6px;">
+                    <strong>#${item.final_rank} &bull; ${item.title}</strong>
+                    <span class="badge-custom badge-success" style="float: right;">Score: ${item.score}</span>
+                </div>
+            `;
+        });
+    }
+});
+
+// 2. MapReduce
+document.getElementById("btn-run-mr").addEventListener("click", async () => {
+    const res = await apiPost("/api/web/mapreduce", {});
+    if (res.ok) {
+        const d = res.data;
+        const c = document.getElementById("mr-output-container");
+        let sampleMapHtml = d.sample_map_pairs.slice(0, 10).map(p => `<code>("${p[0]}", (${p[1][0]}, 1))</code>`).join(", ");
+        let reducedHtml = d.reduced_index.slice(0, 8).map(r => `
+            <tr>
+                <td><strong>${r.term}</strong></td>
+                <td><span class="badge-custom badge-info">${r.total_occurrences}</span></td>
+                <td>${r.document_frequency} doc(s)</td>
+            </tr>
+        `).join("");
+
+        c.innerHTML = `
+            <div style="display: flex; gap: 12px; margin-bottom: 1rem;">
+                <div class="badge-custom badge-info">Map Pairs: ${d.total_map_pairs_emitted}</div>
+                <div class="badge-custom badge-success">Unique Terms: ${d.unique_terms_reduced}</div>
+            </div>
+            <div style="font-size: 0.8rem; margin-bottom: 1rem;">
+                <strong>Sample Mapper Stream:</strong> ${sampleMapHtml}...
+            </div>
+            <table class="table-custom">
+                <thead><tr><th>Term</th><th>Total Reduced Freq</th><th>Doc Breadth</th></tr></thead>
+                <tbody>${reducedHtml}</tbody>
+            </table>
+        `;
+    }
+});
+
+// 3. Inverted Index
+async function loadInvertedIndex(term = null) {
+    const url = term ? `/api/web/inverted_index?term=${encodeURIComponent(term)}` : "/api/web/inverted_index";
+    const res = await apiGet(url);
+    if (res.ok) {
+        const tbody = document.getElementById("inverted-index-body");
+        tbody.innerHTML = "";
+        res.data.terms.forEach(t => {
+            let postingsStr = t.postings.map(p => `[Doc ${p.doc_id}: tf=${p.tf}]`).join(" ");
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${t.term}</strong></td>
+                    <td><span class="badge-custom badge-info">${t.document_frequency}</span></td>
+                    <td style="font-family: monospace; font-size: 0.8rem;">${postingsStr}</td>
+                </tr>
+            `;
+        });
+    }
+}
+document.getElementById("btn-filter-index").addEventListener("click", () => {
+    loadInvertedIndex(document.getElementById("inverted-filter-input").value.trim());
+});
+
+// 4. Cluster & Distributed
+document.getElementById("btn-run-cluster").addEventListener("click", async () => {
+    const q = document.getElementById("cluster-query-input").value.trim();
+    const res = await apiPost("/api/web/cluster_search", { query: q });
+    if (res.ok) {
+        const c = document.getElementById("cluster-output");
+        let routes = res.data.cluster_routing.map(r => `
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
+                <span>${r.cluster_name}</span>
+                <span class="badge-custom badge-info">Affinity: ${r.affinity_score}</span>
+            </div>
+        `).join("");
+
+        let resultsHtml = res.data.final_ranked_results.slice(0, 4).map(r => `
+            <div style="padding: 8px; background: var(--bg-tertiary); border-radius: 6px; margin-top: 6px; font-size: 0.82rem;">
+                <strong>#${r.global_rank} &bull; ${r.title}</strong>
+                <div style="color: var(--text-accent); font-size: 0.72rem;">From: ${r.cluster_source}</div>
+            </div>
+        `).join("");
+
+        c.innerHTML = `
+            <div style="margin-bottom: 0.75rem;"><strong>Cluster Affinities:</strong>${routes}</div>
+            <strong>Routed Results:</strong>${resultsHtml}
+        `;
+    }
+});
+
+document.getElementById("btn-run-dist").addEventListener("click", async () => {
+    const q = document.getElementById("dist-query-input").value.trim();
+    const res = await apiPost("/api/web/distributed_search", { query: q });
+    if (res.ok) {
+        const c = document.getElementById("dist-output");
+        let nodesHtml = res.data.node_telemetry.map(n => `
+            <div style="font-size: 0.78rem; display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>${n.node_name}</span>
+                <span class="badge-custom badge-success">${n.latency_ms} ms (${n.hits} hits)</span>
+            </div>
+        `).join("");
+
+        let resultsHtml = res.data.merged_results.slice(0, 4).map(r => `
+            <div style="padding: 8px; background: var(--bg-tertiary); border-radius: 6px; margin-top: 6px; font-size: 0.82rem;">
+                <strong>#${r.distributed_rank} &bull; ${r.title}</strong>
+                <div style="color: var(--text-muted); font-size: 0.72rem;">Merged from ${r.origin_node}</div>
+            </div>
+        `).join("");
+
+        c.innerHTML = `
+            <div style="margin-bottom: 0.75rem;"><strong>Node Latencies:</strong>${nodesHtml}</div>
+            <strong>Merged Results:</strong>${resultsHtml}
+        `;
+    }
+});
+
+// 5. PageRank
+document.getElementById("pr-damping").addEventListener("input", (e) => {
+    document.getElementById("pr-damping-val").innerText = e.target.value;
+});
+
+async function loadPageRank() {
+    const d = document.getElementById("pr-damping").value;
+    const res = await apiGet(`/api/web/pagerank?damping=${d}`);
+    if (res.ok) {
+        const data = res.data;
+        document.getElementById("pr-summary-stats").innerHTML = `
+            Converged in <strong>${data.iterations_to_converge}</strong> iterations with residual error &lt; 10<sup>-6</sup>.
+        `;
+        renderVisNetwork("pagerankNetwork", data.vis_graph.nodes, data.vis_graph.edges);
+    }
+}
+document.getElementById("btn-run-pagerank").addEventListener("click", loadPageRank);
+
+// 6. Ranking Benchmark
+document.getElementById("btn-run-compare").addEventListener("click", async () => {
+    const q = document.getElementById("compare-query-input").value.trim();
+    const res = await apiPost("/api/web/compare_rankings", { query: q });
+    if (res.ok) {
+        const tbody = document.getElementById("compare-table-body");
+        tbody.innerHTML = "";
+        res.data.comparison_summary.forEach(row => {
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${row.method}</strong></td>
+                    <td>${(row.precision * 100).toFixed(1)}%</td>
+                    <td>${(row.recall * 100).toFixed(1)}%</td>
+                    <td>${row.f1_score.toFixed(3)}</td>
+                    <td>${(row.p_at_3 * 100).toFixed(1)}%</td>
+                    <td><strong style="color: var(--text-accent);">${row.average_precision.toFixed(3)}</strong></td>
+                </tr>
+            `;
+        });
+    }
+});
+
+// 7. Web Crawler
+document.getElementById("btn-run-crawl").addEventListener("click", async () => {
+    const seed = document.getElementById("crawl-seed-url").value.trim();
+    const depth = parseInt(document.getElementById("crawl-depth").value);
+    const pages = parseInt(document.getElementById("crawl-pages").value);
+    showToast("Crawling web pages with polite delay...", "info");
+
+    const res = await apiPost("/api/web/crawl", { seed_url: seed, depth: depth, max_pages: pages });
+    if (res.ok) {
+        showToast(`Harvested ${res.data.total_crawled} pages!`, "success");
+        const c = document.getElementById("crawl-results-container");
+        c.innerHTML = "";
+        res.data.crawled_pages.forEach(p => {
+            c.innerHTML += `
+                <div style="padding: 12px; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 8px; margin-bottom: 8px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <strong style="font-size: 0.9rem;">${p.title}</strong>
+                        <span class="badge-custom badge-info">Depth ${p.depth}</span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-accent); margin: 3px 0;">${p.url}</div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 4px 0;">${p.content_preview}</p>
+                    <div style="font-size: 0.72rem; color: var(--text-muted);">${p.out_links_count} Outgoing Links Discovered</div>
+                </div>
+            `;
+        });
+    }
+});
+</script>
+{% endblock %}

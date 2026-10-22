@@ -1,0 +1,489 @@
+{% extends "base.html" %}
+
+{% block title %}Unit VI: IR Applications &bull; Banking Recommenders &amp; Semantic Knowledge Graph{% endblock %}
+{% block breadcrumb %}Academic IR &bull; Unit VI: IR Applications &amp; Semantic Web{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h4 class="fw-bold mb-1 text-white"><i class="fas fa-diagram-project text-info me-2"></i>Unit VI: IR Applications &bull; Financial Recommenders &amp; Semantic Knowledge Graph</h4>
+        <p class="text-secondary small mb-0">Collaborative wealth suggestions &bull; Content-based policy matching &bull; Constraint security rules &bull; Interactive RDF Knowledge Graph</p>
+    </div>
+    <div>
+        <span class="badge bg-primary px-3 py-2"><i class="fas fa-graduation-cap me-1"></i> MCA Unit VI Banking IR</span>
+    </div>
+</div>
+
+<!-- Tabs for Unit VI Demonstrations -->
+<div class="card-custom mb-4">
+    <ul class="nav nav-tabs border-secondary mb-3" id="app-tabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active text-white" id="cf-tab" data-bs-toggle="tab" data-bs-target="#tab-cf" type="button">
+                <i class="fas fa-users me-1 text-info"></i> 1. Collaborative Filtering
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link text-white" id="cb-tab" data-bs-toggle="tab" data-bs-target="#tab-cb" type="button">
+                <i class="fas fa-tags me-1 text-warning"></i> 2. Content-Based Recommender
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link text-white" id="kb-tab" data-bs-toggle="tab" data-bs-target="#tab-kb" type="button">
+                <i class="fas fa-scale-balanced me-1 text-success"></i> 3. Knowledge-Based Rules
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link text-white" id="kg-tab" data-bs-toggle="tab" data-bs-target="#tab-kg" type="button">
+                <i class="fas fa-share-nodes me-1 text-danger"></i> 4. Semantic Knowledge Graph &amp; Triples
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content p-2">
+        <!-- 1. Collaborative Filtering Tab -->
+        <div class="tab-pane fade show active" id="tab-cf">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <div>
+                    <h5 class="fw-bold text-white mb-1">Customer Collaborative Filtering (Cosine Utility Matrix)</h5>
+                    <p class="text-secondary small mb-0">Recommends financial plans and smart ATM services by identifying peer customers with correlated banking behaviors.</p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <label class="small text-secondary mb-0">Target Customer:</label>
+                    <select class="form-select form-select-sm bg-dark border-secondary text-white w-auto" id="cf-user">
+                        {% for u in users %}
+                        <option value="{{ u.username }}" {% if u.username == 'alex' %}selected{% endif %}>{{ u.full_name }} ({{ u.username }})</option>
+                        {% endfor %}
+                    </select>
+                    <button class="btn btn-sm btn-info fw-semibold" onclick="runCF()">
+                        <i class="fas fa-calculator me-1"></i> Compute Recommendations
+                    </button>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-lg-7">
+                    <div class="card bg-dark border-secondary p-3 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold text-white mb-0"><i class="fas fa-piggy-bank text-warning me-2"></i>Personalized Wealth Recommendations for <span id="cf-target-label" class="text-info">alex</span></h6>
+                            <span class="badge bg-secondary font-monospace" id="cf-strategy-badge">Cosine Similarity</span>
+                        </div>
+                        <div id="cf-recs-container">
+                            <div class="text-secondary small py-3">Click "Compute Recommendations" to predict customer preferences from peer utility ratings.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="card bg-dark border-secondary p-3 h-100">
+                        <h6 class="fw-bold text-white mb-2"><i class="fas fa-table-cells text-primary me-2"></i>Customer-Product Utility Matrix</h6>
+                        <div class="table-responsive">
+                            <table class="table table-dark table-sm table-bordered border-secondary small text-center mb-0 align-middle">
+                                <thead>
+                                    <tr class="text-secondary">
+                                        <th>Customer</th>
+                                        <th title="4.25% High-Yield Wealth Vault">P1: Vault</th>
+                                        <th title="Biometric Smart Chip Debit Card">P2: Bio-Card</th>
+                                        <th title="Zero-Liability Fraud Protection Shield">P3: FraudShield</th>
+                                        <th title="Automated 50/30/20 Wealth Builder Plan">P4: Wealth 50/30</th>
+                                        <th title="Global Travel Debit Card">P5: Travel</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td class="text-info fw-bold">alex</td><td class="text-warning">5★</td><td class="text-warning">4.5★</td><td class="text-warning">5★</td><td>2★</td><td>-</td></tr>
+                                    <tr><td class="text-info fw-bold">elena</td><td class="text-warning">4★</td><td class="text-warning">5★</td><td class="text-warning">4★</td><td>2★</td><td>-</td></tr>
+                                    <tr><td class="text-info fw-bold">suyash_karandikar</td><td class="text-warning">5★</td><td>-</td><td class="text-warning">5★</td><td>-</td><td class="text-warning">4.5★</td></tr>
+                                    <tr><td class="text-info fw-bold">admin</td><td>-</td><td class="text-warning">5★</td><td>-</td><td class="text-warning">5★</td><td class="text-warning">4★</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="small text-secondary mt-3">
+                            <i class="fas fa-circle-info text-info me-1"></i>
+                            <strong>Explanation:</strong> Missing entries (<code>-</code>) represent unadopted products predicted via weighted average of k-nearest customer cosine vectors.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Content-Based Tab -->
+        <div class="tab-pane fade" id="tab-cb">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <div>
+                    <h5 class="fw-bold text-white mb-1">Content-Based TF-IDF Banking Policy Recommender</h5>
+                    <p class="text-secondary small mb-0">Computes pairwise cosine distances across TF-IDF term vectors to discover related regulatory, security, and banking policy literature.</p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <label class="small text-secondary mb-0">Base Document:</label>
+                    <select class="form-select form-select-sm bg-dark border-secondary text-white w-auto" id="cb-doc">
+                        {% for d in documents %}
+                        <option value="{{ d.doc_id }}" {% if d.doc_id == 1 %}selected{% endif %}>Doc #{{ d.doc_id }}: {{ d.title }} [{{ d.category }}]</option>
+                        {% endfor %}
+                    </select>
+                    <button class="btn btn-sm btn-warning fw-semibold text-dark" onclick="runCB()">
+                        <i class="fas fa-tags me-1"></i> Find Similar Policies
+                    </button>
+                </div>
+            </div>
+
+            <div id="cb-output-box" class="card bg-dark border-secondary p-3">
+                <div id="cb-results-list" class="list-group list-group-flush bg-transparent">
+                    <div class="text-secondary small py-2">Select a banking or security document and click "Find Similar Policies" to calculate TF-IDF cosine similarity.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Knowledge-Based Rules Tab -->
+        <div class="tab-pane fade" id="tab-kb">
+            <h5 class="fw-bold text-white mb-2">Knowledge-Based Banking Rule Inference Engine</h5>
+            <p class="text-secondary small mb-3">Applies multi-attribute constraints and financial domain rules to recommend security protocols and compliance guidelines.</p>
+            
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <label class="small text-secondary mb-1">CORE TECHNOLOGY</label>
+                    <select class="form-select bg-dark border-secondary text-white" id="kb-tech">
+                        <option value="Face Recognition" selected>Face Recognition (Biometrics)</option>
+                        <option value="Cryptography">Cryptography (PBKDF2/SHA-256)</option>
+                        <option value="Search Engine">Search Engine (Inverted Index)</option>
+                        <option value="Machine Learning">Machine Learning (Network Graphs)</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="small text-secondary mb-1">APPLICATION DOMAIN</label>
+                    <select class="form-select bg-dark border-secondary text-white" id="kb-app">
+                        <option value="ATM Banking" selected>ATM Banking Terminals</option>
+                        <option value="Cybersecurity">SOC Cybersecurity</option>
+                        <option value="Multi-Factor Auth">Multi-Factor Authentication</option>
+                        <option value="Web Search">Financial Intranet Search</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="small text-secondary mb-1">SECURITY TIER</label>
+                    <select class="form-select bg-dark border-secondary text-white" id="kb-sec">
+                        <option value="Critical" selected>Critical (Tier-1 Financial)</option>
+                        <option value="High">High (Fraud &amp; Incident)</option>
+                        <option value="Medium">Medium (Index &amp; Analytics)</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-success w-100 fw-semibold" onclick="runKB()">
+                        <i class="fas fa-scale-balanced me-1"></i> Evaluate Rules
+                    </button>
+                </div>
+            </div>
+
+            <div id="kb-results-box" class="card bg-dark border-secondary p-3 d-none">
+                <h6 class="fw-bold text-white mb-2"><i class="fas fa-check-double text-success me-2"></i>Matched Banking Standards &amp; Architecture Guidelines</h6>
+                <div id="kb-results-list" class="list-group list-group-flush bg-transparent"></div>
+            </div>
+        </div>
+
+        <!-- 4. Semantic Graph Tab -->
+        <div class="tab-pane fade" id="tab-kg">
+            <h5 class="fw-bold text-white mb-2">Semantic Web RDF Knowledge Graph &amp; Banking Entity Extraction</h5>
+            <p class="text-secondary small mb-3">Automated Information Extraction (NER) and interactive Vis.js directed knowledge graph modeling relationships between customers, accounts, ATM terminals, and anti-fraud modules.</p>
+
+            <div class="row g-3 mb-4">
+                <div class="col-lg-5">
+                    <div class="card bg-dark border-secondary p-3 h-100">
+                        <h6 class="fw-bold text-white mb-2"><i class="fas fa-file-lines text-info me-2"></i>Extract RDF Triples From Banking Text</h6>
+                        <textarea class="form-control bg-dark border-secondary text-white mb-2" id="ie-text" rows="4" placeholder="Enter banking or IR passage...">ATM Terminal 01 uses OpenCV LBPH face recognition to authenticate customer Alex. The Anti-Spoofing engine evaluates Laplacian variance liveness to prevent fraudulent withdrawals.</textarea>
+                        
+                        <div class="d-flex gap-2 mb-3">
+                            <button class="btn btn-danger btn-sm fw-semibold flex-fill" onclick="extractTriples()">
+                                <i class="fas fa-wand-magic-sparkles me-1"></i> Extract Entities &amp; Triples
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="setPresetText(1)">Preset 1</button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="setPresetText(2)">Preset 2</button>
+                        </div>
+                        <div id="ie-results" class="small text-secondary">
+                            <div class="text-muted">Extracted technologies, organizations, persons, and (Subject, Predicate, Object) triples will appear here.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-7">
+                    <div class="card bg-dark border-secondary p-3 h-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                            <h6 class="fw-bold text-white mb-0"><i class="fas fa-diagram-project text-success me-2"></i>Interactive Vis.js Entity Network</h6>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="text" class="form-control form-control-sm bg-dark border-secondary text-white" id="kg-query" placeholder="Filter node (ATM, Face, Security)..." style="width: 180px;">
+                                <button class="btn btn-sm btn-info fw-semibold" onclick="loadSubgraph()">
+                                    <i class="fas fa-rotate me-1"></i> Query Graph
+                                </button>
+                            </div>
+                        </div>
+                        <div id="kg-graph-summary" class="small text-secondary mb-2">Displaying connected entities and relationships. Click and drag nodes to explore graph dynamics.</div>
+                        
+                        <!-- Vis.js Network Canvas Container -->
+                        <div id="vis-network-container" style="height: 320px; width: 100%; background: #0a0f1d; border-radius: 8px; border: 1px solid #374151;" class="mb-3"></div>
+
+                        <h6 class="small text-uppercase text-secondary fw-bold mb-2">Active Semantic Triples</h6>
+                        <div class="table-responsive" style="max-height: 180px; overflow-y: auto;">
+                            <table class="table table-dark table-sm table-hover mb-0">
+                                <thead>
+                                    <tr class="text-secondary small">
+                                        <th>SUBJECT</th>
+                                        <th>PREDICATE</th>
+                                        <th>OBJECT</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="kg-triples-table">
+                                    {% for t in triples[:8] %}
+                                    <tr>
+                                        <td class="text-info small fw-bold">{{ t.subject }}</td>
+                                        <td class="text-secondary small font-monospace">{{ t.predicate }}</td>
+                                        <td class="text-success small fw-bold">{{ t.object }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Vis.js Standalone Network Library -->
+<script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+<script>
+let visNetworkInstance = null;
+
+async function runCF() {
+    let user = document.getElementById('cf-user').value;
+    document.getElementById('cf-target-label').innerText = user;
+    let box = document.getElementById('cf-recs-container');
+    box.innerHTML = '<div class="text-info small py-3"><i class="fas fa-spinner fa-spin me-2"></i> Computing user similarities and predicting financial product adoption...</div>';
+
+    try {
+        let res = await fetch('/ir/api/cf', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({user: user, top_k: 4})
+        });
+        let d = await res.json();
+        if (d.success) {
+            box.innerHTML = '';
+            let recs = d.data.recommendations || [];
+            if (recs.length === 0) {
+                box.innerHTML = '<div class="text-secondary small py-3">All available products already enrolled for this customer.</div>';
+                return;
+            }
+            recs.forEach((item, idx) => {
+                let div = document.createElement('div');
+                div.className = 'p-3 bg-black rounded border border-secondary mb-2';
+                let prodName = item.product_name || item.title || ('Financial Product #' + item.doc_id);
+                div.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-bold text-white"><i class="fas fa-shield-halved text-info me-2"></i>#${idx + 1} ${prodName}</span>
+                        <span class="badge bg-warning text-dark font-monospace fw-bold">${item.predicted_rating} ★</span>
+                    </div>
+                    <div class="small text-secondary mb-1">${item.reason || 'Predicted based on user similarity.'}</div>
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-dark border border-secondary text-info">Confidence: ${(item.confidence * 100).toFixed(0)}%</span>
+                        <span class="badge bg-dark border border-secondary text-secondary">Peer Neighbors: ${item.neighbors_used || 2}</span>
+                    </div>
+                `;
+                box.appendChild(div);
+            });
+        }
+    } catch(e) {
+        box.innerHTML = '<div class="text-danger small py-3">Error running Collaborative Filtering</div>';
+    }
+}
+
+async function runCB() {
+    let docId = parseInt(document.getElementById('cb-doc').value);
+    let list = document.getElementById('cb-results-list');
+    list.innerHTML = '<div class="text-secondary small py-2"><i class="fas fa-spinner fa-spin me-2 text-warning"></i> Calculating TF-IDF cosine distances across banking policy corpus...</div>';
+
+    try {
+        let res = await fetch('/ir/api/cb', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({doc_id: docId, top_k: 4})
+        });
+        let d = await res.json();
+        if (d.success) {
+            list.innerHTML = '';
+            let recs = d.data.recommendations || [];
+            if (recs.length === 0) {
+                list.innerHTML = '<div class="text-secondary small">No related banking policies found above cosine threshold.</div>';
+                return;
+            }
+            recs.forEach((item, idx) => {
+                let div = document.createElement('div');
+                div.className = 'list-group-item bg-transparent text-white border-secondary px-0 mb-2';
+                let shared = (item.shared_features || []).map(f => `<span class="badge bg-dark border border-secondary text-info me-1">${f}</span>`).join('');
+                div.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-semibold">#${idx + 1} ${item.title}</span>
+                        <span class="badge bg-success font-monospace">Cosine: ${item.similarity}</span>
+                    </div>
+                    <div class="small text-secondary mb-1">${item.reason}</div>
+                    <div><span class="small text-muted me-2">Shared Keywords:</span>${shared}</div>
+                `;
+                list.appendChild(div);
+            });
+        }
+    } catch(e) {
+        list.innerHTML = '<div class="text-danger small">Error computing content similarities</div>';
+    }
+}
+
+async function runKB() {
+    let tech = document.getElementById('kb-tech').value;
+    let app = document.getElementById('kb-app').value;
+    let sec = document.getElementById('kb-sec').value;
+    let box = document.getElementById('kb-results-box');
+    box.classList.remove('d-none');
+    let list = document.getElementById('kb-results-list');
+    list.innerHTML = '<div class="text-secondary small py-2"><i class="fas fa-spinner fa-spin me-2 text-success"></i> Evaluating knowledge constraint rules...</div>';
+
+    try {
+        let res = await fetch('/ir/api/knowledge_rules', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({technology: tech, application: app, security_level: sec})
+        });
+        let d = await res.json();
+        if (d.success) {
+            list.innerHTML = '';
+            (d.data.recommendations || []).forEach((item, idx) => {
+                let div = document.createElement('div');
+                div.className = 'list-group-item bg-transparent text-white border-secondary px-0 mb-2';
+                let badgeClass = item.match_percentage >= 80 ? 'bg-success' : 'bg-info';
+                div.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="fw-semibold"><i class="fas fa-shield-check text-success me-2"></i>${item.title}</span>
+                        <span class="badge ${badgeClass} font-monospace">${item.match_percentage}% Match</span>
+                    </div>
+                    <div class="small text-secondary mb-1">${item.description}</div>
+                    <div class="small text-muted"><i class="fas fa-circle-check text-success me-1"></i><strong>Rules Fired:</strong> ${item.rule_fired}</div>
+                `;
+                list.appendChild(div);
+            });
+        }
+    } catch(e) {
+        list.innerHTML = '<div class="text-danger small">Error evaluating rules</div>';
+    }
+}
+
+function setPresetText(num) {
+    let box = document.getElementById('ie-text');
+    if (num === 1) {
+        box.value = "ATM Terminal 01 uses OpenCV LBPH face recognition to authenticate customer Alex. The Anti-Spoofing engine evaluates Laplacian variance liveness to prevent fraudulent withdrawals.";
+    } else {
+        box.value = "Customer Elena transferred funds into High-Yield Vault to earn compound interest. Security Operations Center monitors suspicious login attempts with Multi-Factor Authentication.";
+    }
+}
+
+async function extractTriples() {
+    let text = document.getElementById('ie-text').value.trim();
+    if (!text) return;
+    let out = document.getElementById('ie-results');
+    out.innerHTML = '<i class="fas fa-spinner fa-spin me-2 text-danger"></i> Extracting entities and semantic triples...';
+
+    try {
+        let res = await fetch('/ir/api/triples', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({text: text})
+        });
+        let d = await res.json();
+        if (d.success) {
+            let techBadges = (d.data.entities.technologies || []).map(t => `<span class="badge bg-info me-1">${t}</span>`).join('');
+            let personBadges = (d.data.entities.persons || []).map(p => `<span class="badge bg-success me-1">${p}</span>`).join('');
+            let triplesList = (d.data.triples || []).map(t => `<div class="font-monospace small text-white mt-1">&bull; <span class="text-info">${t.subject}</span> &rarr; <span class="text-secondary">${t.predicate}</span> &rarr; <span class="text-success">${t.object}</span></div>`).join('');
+            out.innerHTML = `
+                <div class="mb-1"><span class="small text-secondary">Technologies:</span> ${techBadges || '<span class="text-muted small">None</span>'}</div>
+                <div class="mb-2"><span class="small text-secondary">Persons/Entities:</span> ${personBadges || '<span class="text-muted small">None</span>'}</div>
+                <div><span class="small text-secondary">Extracted Triples (${(d.data.triples || []).length}):</span>${triplesList || '<div class="text-muted">None</div>'}</div>
+            `;
+        }
+    } catch(e) {
+        out.innerHTML = '<div class="text-danger">Extraction error</div>';
+    }
+}
+
+async function loadSubgraph() {
+    let query = document.getElementById('kg-query').value.trim();
+    let summary = document.getElementById('kg-graph-summary');
+    summary.innerHTML = '<i class="fas fa-spinner fa-spin me-2 text-info"></i> Querying RDF knowledge graph...';
+
+    try {
+        let res = await fetch('/ir/api/kg_subgraph', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({query: query})
+        });
+        let d = await res.json();
+        if (d.success) {
+            summary.innerHTML = `Identified <strong>${d.data.entity_count}</strong> entities and <strong>${d.data.relationship_count}</strong> directed relationships in graph.`;
+            
+            // Populate triples table
+            let tbody = document.getElementById('kg-triples-table');
+            tbody.innerHTML = '';
+            (d.data.triples || []).forEach(t => {
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="text-info small fw-bold">${t.subject}</td>
+                    <td class="text-secondary small font-monospace">${t.predicate}</td>
+                    <td class="text-success small fw-bold">${t.object}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // Render Vis.js interactive network if library loaded
+            if (typeof vis !== 'undefined' && d.data.vis_graph) {
+                let container = document.getElementById('vis-network-container');
+                let data = {
+                    nodes: new vis.DataSet(d.data.vis_graph.nodes || []),
+                    edges: new vis.DataSet(d.data.vis_graph.edges || [])
+                };
+                let options = {
+                    nodes: {
+                        shape: 'box',
+                        margin: 10,
+                        borderWidth: 1.5,
+                        shadow: true,
+                        font: { color: '#ffffff', size: 12, face: 'Inter, sans-serif' }
+                    },
+                    edges: {
+                        arrows: { to: { enabled: true, scaleFactor: 0.8 } },
+                        smooth: { type: 'continuous' }
+                    },
+                    physics: {
+                        stabilization: true,
+                        barnesHut: { gravitationalConstant: -3000, springLength: 95 }
+                    },
+                    interaction: { hover: true, tooltipDelay: 200 }
+                };
+                if (visNetworkInstance) {
+                    visNetworkInstance.destroy();
+                }
+                visNetworkInstance = new vis.Network(container, data, options);
+            }
+        }
+    } catch(e) {
+        summary.innerHTML = '<span class="text-danger">Graph query error</span>';
+    }
+}
+
+// Auto-initialize default view upon tab activation
+document.addEventListener('DOMContentLoaded', () => {
+    // Auto load Vis.js graph when switching to tab 4
+    let kgTab = document.getElementById('kg-tab');
+    if (kgTab) {
+        kgTab.addEventListener('shown.bs.tab', () => {
+            if (!visNetworkInstance) {
+                loadSubgraph();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

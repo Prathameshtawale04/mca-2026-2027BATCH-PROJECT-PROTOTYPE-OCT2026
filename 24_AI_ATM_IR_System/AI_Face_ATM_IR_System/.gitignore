@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.env
+
+# SQLite
+*.db-journal
+
+# OpenCV / Face Samples (can be recreated or trained)
+data/face_data/samples/*/*.jpg
+!data/face_data/samples/*/.gitkeep
+
+# Pytest / Cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Scrapy
+.scrapy/
+
+# VS Code & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

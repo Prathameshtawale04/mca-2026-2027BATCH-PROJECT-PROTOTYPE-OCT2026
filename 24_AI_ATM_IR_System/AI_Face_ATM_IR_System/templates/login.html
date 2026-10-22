@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}Secure Sign In &bull; Mira AI Smart ATM System{% endblock %}
+{% block breadcrumb %}Authentication{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 75vh;">
+    <div class="col-md-8 col-lg-6 col-xl-5">
+        <div class="card-custom">
+            <!-- Header Icon & Title -->
+            <div class="text-center mb-4">
+                <div class="d-inline-flex p-3 rounded-circle mb-3" style="background: rgba(6, 182, 212, 0.12); border: 1px solid rgba(6, 182, 212, 0.25);">
+                    <i class="fas fa-shield-halved text-info fs-1"></i>
+                </div>
+                <h4 class="fw-bold mb-1 text-white">Mira AI Smart ATM Portal</h4>
+                <p class="text-secondary small mb-0">Biometric computer vision &amp; secure multi-factor authentication</p>
+            </div>
+
+            <!-- Login Navigation Tabs -->
+            <ul class="nav nav-pills nav-fill bg-dark rounded p-1 mb-4 border border-secondary" id="login-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active py-2 small fw-semibold" id="tab-btn-pwd" data-bs-toggle="pill" data-bs-target="#tab-content-pwd" type="button" role="tab">
+                        <i class="fas fa-key me-1"></i> Password Sign In
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link py-2 small fw-semibold text-info" id="tab-btn-face" data-bs-toggle="pill" data-bs-target="#tab-content-face" type="button" role="tab">
+                        <i class="fas fa-camera me-1"></i> Biometric Face Login
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <!-- 1. Password Login Tab -->
+                <div class="tab-pane fade show active" id="tab-content-pwd" role="tabpanel">
+                    <form action="{{ url_for('auth.login') }}" method="POST" class="mb-3">
+                        <input type="hidden" name="next" value="{{ request.args.get('next', '') }}">
+                        
+                        <div class="mb-3">
+                            <label for="username" class="form-label small text-secondary fw-semibold">ACCOUNT USERNAME OR EMAIL</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fas fa-user"></i></span>
+                                <input type="text" class="form-control bg-dark border-secondary text-white" id="username" name="username" placeholder="e.g. your username or account" value="{{ username or '' }}" required autofocus>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label small text-secondary fw-semibold">ACCOUNT PASSWORD</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fas fa-lock"></i></span>
+                                <input type="password" class="form-control bg-dark border-secondary text-white" id="password" name="password" placeholder="••••••••" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2">
+                            <i class="fas fa-arrow-right-to-bracket"></i> Sign In to Account
+                        </button>
+                    </form>
+                </div>
+
+                <!-- 2. Biometric Face Login Tab -->
+                <div class="tab-pane fade" id="tab-content-face" role="tabpanel">
+                    <div class="mb-3">
+                        <label for="face-account" class="form-label small text-secondary fw-semibold">ACCOUNT NUMBER OR USERNAME</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fas fa-id-card"></i></span>
+                            <input type="text" class="form-control bg-dark border-secondary text-white" id="face-account" placeholder="e.g. ACC1001, ACC7110 or username">
+                        </div>
+                    </div>
+
+                    <!-- Camera Viewport / Face Scanner -->
+                    <div class="position-relative bg-dark rounded border border-secondary text-center overflow-hidden mb-3" style="min-height: 220px; display: flex; align-items: center; justify-content: center;">
+                        <video id="face-login-video" autoplay playsinline muted style="width: 100%; max-height: 220px; object-fit: cover; display: none;"></video>
+                        <canvas id="face-login-canvas" style="display: none;"></canvas>
+
+                        <div id="face-login-placeholder" class="p-3 text-secondary">
+                            <i class="fas fa-camera fs-1 mb-2 d-block opacity-50 text-info"></i>
+                            <div class="small mb-2">Live Biometric Camera Standby</div>
+                            <button type="button" class="btn btn-sm btn-outline-info" id="btn-start-login-cam">
+                                <i class="fas fa-video me-1"></i> Start Camera Scanner
+                            </button>
+                        </div>
+
+                        <!-- Cyan HUD Overlay -->
+                        <div id="face-login-hud" style="display: none; position: absolute; inset: 0; pointer-events: none; border: 2px dashed rgba(6, 182, 212, 0.5); margin: 15px; border-radius: 12px;"></div>
+                    </div>
+
+                    <!-- Fallback / Simulator Options if Camera is Blocked -->
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <label class="btn btn-sm btn-outline-secondary mb-0 small" style="cursor: pointer;">
+                            <i class="fas fa-upload me-1"></i> Upload Photo
+                            <input type="file" id="face-login-file" accept="image/*" style="display: none;">
+                        </label>
+                        <button type="button" class="btn btn-sm btn-outline-warning small" id="btn-simulate-face-login">
+                            <i class="fas fa-robot me-1"></i> Verify via Enrolled Biometrics
+                        </button>
+                    </div>
+
+                    <!-- ATM Security PIN -->
+                    <div class="mb-3">
+                        <label for="face-pin" class="form-label small text-secondary fw-semibold">ATM SECURITY PIN (4 DIGITS)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-secondary"><i class="fas fa-asterisk"></i></span>
+                            <input type="password" class="form-control bg-dark border-secondary text-white font-monospace" id="face-pin" maxlength="4" placeholder="••••">
+                        </div>
+                    </div>
+
+                    <div id="face-login-alert" class="alert small py-2 d-none mb-3"></div>
+
+                    <button type="button" class="btn btn-info w-100 py-2 fw-semibold text-dark d-flex align-items-center justify-content-center gap-2" id="btn-submit-face-login">
+                        <i class="fas fa-fingerprint"></i> Scan &amp; Authenticate Biometrics
+                    </button>
+                </div>
+            </div>
+
+            <!-- Registration Link -->
+            <div class="text-center mt-3 pt-3 border-top border-secondary-subtle">
+                <span class="text-secondary small">New customer?</span>
+                <a href="{{ url_for('auth.register') }}" class="text-info small fw-semibold text-decoration-none ms-1">Open a Bank Account</a>
+            </div>
+
+            <div class="text-center mt-3 text-muted small" style="font-size: 0.72rem;">
+                <i class="fas fa-lock text-success me-1"></i> 256-bit SSL Cryptography &bull; Optical Anti-Spoofing &bull; LBPH Machine Vision
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Biometric Face Login Handler
+let video = document.getElementById('face-login-video');
+let canvas = document.getElementById('face-login-canvas');
+let placeholder = document.getElementById('face-login-placeholder');
+let startCamBtn = document.getElementById('btn-start-login-cam');
+let hud = document.getElementById('face-login-hud');
+let submitBtn = document.getElementById('btn-submit-face-login');
+let simulateBtn = document.getElementById('btn-simulate-face-login');
+let fileInput = document.getElementById('face-login-file');
+let alertBox = document.getElementById('face-login-alert');
+
+let cameraStream = null;
+let uploadedPhotoBase64 = null;
+
+function showAlert(msg, isSuccess) {
+    alertBox.className = `alert small py-2 mb-3 ${isSuccess ? 'alert-success border-success text-success' : 'alert-danger border-danger text-danger'}`;
+    alertBox.innerHTML = (isSuccess ? '<i class="fas fa-circle-check me-1"></i> ' : '<i class="fas fa-triangle-exclamation me-1"></i> ') + msg;
+    alertBox.classList.remove('d-none');
+}
+
+startCamBtn.addEventListener('click', async () => {
+    try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({ video: { width: 480, height: 360 } });
+        video.srcObject = cameraStream;
+        video.style.display = 'block';
+        placeholder.style.display = 'none';
+        hud.style.display = 'block';
+    } catch (err) {
+        showAlert("Webcam access blocked by browser settings. You can still log in using 'Upload Photo' or 'Verify via Enrolled Biometrics'!", false);
+    }
+});
+
+fileInput.addEventListener('change', (e) => {
+    let file = e.target.files[0];
+    if (file) {
+        let reader = new FileReader();
+        reader.onload = function(evt) {
+            uploadedPhotoBase64 = evt.target.result;
+            showAlert(`Photo loaded: ${file.name}. Ready to verify!`, true);
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+function captureFrame() {
+    if (uploadedPhotoBase64) {
+        return uploadedPhotoBase64;
+    }
+    if (!cameraStream) {
+        return null;
+    }
+    canvas.width = video.videoWidth || 480;
+    canvas.height = video.videoHeight || 360;
+    let ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    return canvas.toDataURL('image/jpeg', 0.85);
+}
+
+async function executeFaceLogin(simulate = false) {
+    let account = document.getElementById('face-account').value.trim();
+    let pin = document.getElementById('face-pin').value.trim();
+
+    if (!account) {
+        showAlert("Please enter your Account Number or Username.", false);
+        return;
+    }
+
+    let imgData = null;
+    if (!simulate) {
+        imgData = captureFrame();
+        if (!imgData) {
+            showAlert("Please activate the camera scanner, upload a face photo, or use 'Verify via Enrolled Biometrics'!", false);
+            return;
+        }
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Verifying Biometrics...';
+
+    try {
+        let res = await fetch("{{ url_for('auth.face_login') }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                account_number: account,
+                pin: pin,
+                image: imgData,
+                simulate: simulate
+            })
+        });
+        let data = await res.json();
+        if (data.success) {
+            showAlert(data.message + " Redirecting to ATM portal...", true);
+            setTimeout(() => {
+                window.location.href = data.redirect_url;
+            }, 800);
+        } else {
+            showAlert(data.message || "Biometric authentication failed", false);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-fingerprint"></i> Scan &amp; Authenticate Biometrics';
+        }
+    } catch (e) {
+        showAlert("Connection error during biometric authentication.", false);
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-fingerprint"></i> Scan &amp; Authenticate Biometrics';
+    }
+}
+
+submitBtn.addEventListener('click', () => executeFaceLogin(false));
+simulateBtn.addEventListener('click', () => executeFaceLogin(true));
+</script>
+{% endblock %}

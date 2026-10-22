@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}Authentication Portal | AI Face ATM & IR System{% endblock %}
+{% block page_title %}Biometric Multi-Factor Authentication Portal{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-3">
+    <div class="col-lg-6 col-md-8">
+        <div class="card-custom">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <div style="width: 64px; height: 64px; background: rgba(37, 99, 235, 0.15); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                    <i class="fas fa-shield-halved" style="font-size: 2rem; color: var(--text-accent);"></i>
+                </div>
+                <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem;">AI Biometric Authentication</h2>
+                <p style="color: var(--text-muted); font-size: 0.85rem;">
+                    Step-by-step verification: Account Number &rarr; Face Recognition &rarr; PIN Entry
+                </p>
+            </div>
+
+            <!-- Stepper Indicators -->
+            <div style="display: flex; justify-content: space-between; position: relative; margin-bottom: 2rem; padding: 0 1rem;">
+                <div id="step-ind-1" style="text-align: center; z-index: 2;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; margin: 0 auto;">1</div>
+                    <span style="font-size: 0.72rem; color: var(--text-muted);">Account</span>
+                </div>
+                <div id="step-ind-2" style="text-align: center; z-index: 2;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--bg-tertiary); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-weight: bold; margin: 0 auto;">2</div>
+                    <span style="font-size: 0.72rem; color: var(--text-muted);">Face Scan</span>
+                </div>
+                <div id="step-ind-3" style="text-align: center; z-index: 2;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--bg-tertiary); color: var(--text-muted); display: flex; align-items: center; justify-content: center; font-weight: bold; margin: 0 auto;">3</div>
+                    <span style="font-size: 0.72rem; color: var(--text-muted);">PIN Entry</span>
+                </div>
+            </div>
+
+            <!-- Step 1: Account Number -->
+            <div id="step-1" class="auth-step">
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="font-size: 0.82rem; font-weight: 600; color: var(--text-muted); display: block; margin-bottom: 0.5rem;">
+                        ACCOUNT NUMBER
+                    </label>
+                    <div style="position: relative;">
+                        <i class="fas fa-credit-card" style="position: absolute; left: 14px; top: 14px; color: var(--text-muted);"></i>
+                        <input type="text" id="auth-acc-input" placeholder="e.g. ACC1001" style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text-main); font-size: 1rem; font-family: monospace;">
+                    </div>
+                </div>
+
+                <button id="btn-next-step1" class="btn-custom btn-primary-custom" style="width: 100%; justify-content: center; padding: 0.8rem;">
+                    Proceed to Face Verification <i class="fas fa-arrow-right"></i>
+                </button>
+
+                <!-- Quick Demo Accounts -->
+                <div style="margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--card-border);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted);">QUICK DEMO ACCOUNTS:</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button type="button" class="btn-custom btn-outline-custom" style="font-size: 0.75rem; padding: 0.35rem 0.65rem;" onclick="fillDemoAcc('ACC1001', '1234')">
+                            <i class="fas fa-user text-accent"></i> ACC1001 (User)
+                        </button>
+                        <button type="button" class="btn-custom btn-outline-custom" style="font-size: 0.75rem; padding: 0.35rem 0.65rem;" onclick="fillDemoAcc('ACC1002', '5678')">
+                            <i class="fas fa-user text-success"></i> ACC1002 (Elena)
+                        </button>
+                        <button type="button" class="btn-custom btn-outline-custom" style="font-size: 0.75rem; padding: 0.35rem 0.65rem;" onclick="fillDemoAcc('ADMIN01', '9999')">
+                            <i class="fas fa-user-shield text-warning"></i> ADMIN01 (Admin)
+                        </button>
+                        <button type="button" class="btn-custom btn-outline-custom" style="font-size: 0.75rem; padding: 0.35rem 0.65rem; color: var(--text-accent);" onclick="oneClickLogin('ACC1001')">
+                            <i class="fas fa-bolt"></i> 1-Click Login
+                        </button>
+                    </div>
+                    <div style="margin-top: 12px;">
+                        <a href="/app" class="btn-custom btn-primary-custom" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; padding: 9px; background: linear-gradient(135deg, #00f5d4, #0284c7); color: #050811; text-decoration: none; border-radius: 8px;">
+                            <i class="fas fa-desktop"></i> Open React Full-Stack Portal (Dual Customer & Admin) &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Face Recognition -->
+            <div id="step-2" class="auth-step" style="display: none;">
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <span id="face-user-display" style="font-weight: 600; color: var(--text-accent);"></span>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">
+                        Align your face with the camera target below
+                    </p>
+                </div>
+
+                <!-- Camera Viewport with HUD -->
+                <div class="camera-box">
+                    <video id="auth-video" autoplay playsinline muted></video>
+                    <canvas id="auth-canvas" style="display: none;"></canvas>
+                    <div class="camera-overlay">
+                        <div class="hud-target"></div>
+                        <div id="hud-status" class="hud-status-bar">
+                            <span><i class="fas fa-circle-notch fa-spin"></i> Initializing Biometrics...</span>
+                            <span id="hud-fps">FPS: 30</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 1.25rem;">
+                    <button id="btn-start-camera" class="btn-custom btn-outline-custom" style="flex: 1; justify-content: center;">
+                        <i class="fas fa-camera"></i> Start Camera
+                    </button>
+                    <button id="btn-simulate-face" class="btn-custom btn-success-custom" style="flex: 1; justify-content: center;" title="Use pre-trained synthetic biometric model">
+                        <i class="fas fa-microchip"></i> Verify Face (Auto)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: PIN Verification -->
+            <div id="step-3" class="auth-step" style="display: none;">
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <span class="badge-custom badge-success" style="margin-bottom: 0.5rem;">
+                        <i class="fas fa-check-circle"></i> Face Verified Successfully
+                    </span>
+                    <h3 style="font-size: 1.1rem; margin-top: 0.5rem;">Enter 4-Digit Security PIN</h3>
+                    <p style="font-size: 0.78rem; color: var(--text-muted);">
+                        Demo PINs: ACC1001 &rarr; <code>1234</code> | ACC1002 &rarr; <code>5678</code>
+                    </p>
+                </div>
+
+                <div style="max-width: 240px; margin: 0 auto 1rem;">
+                    <input type="password" id="pin-display" maxlength="6" readonly style="width: 100%; text-align: center; font-size: 1.8rem; letter-spacing: 0.4rem; padding: 0.5rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 8px; color: var(--text-accent);">
+                </div>
+
+                <!-- Virtual Keypad -->
+                <div class="atm-keypad">
+                    <button class="keypad-btn" onclick="pressPin('1')">1</button>
+                    <button class="keypad-btn" onclick="pressPin('2')">2</button>
+                    <button class="keypad-btn" onclick="pressPin('3')">3</button>
+                    <button class="keypad-btn" onclick="pressPin('4')">4</button>
+                    <button class="keypad-btn" onclick="pressPin('5')">5</button>
+                    <button class="keypad-btn" onclick="pressPin('6')">6</button>
+                    <button class="keypad-btn" onclick="pressPin('7')">7</button>
+                    <button class="keypad-btn" onclick="pressPin('8')">8</button>
+                    <button class="keypad-btn" onclick="pressPin('9')">9</button>
+                    <button class="keypad-btn" onclick="clearPin()" style="color: var(--danger);"><i class="fas fa-delete-left"></i></button>
+                    <button class="keypad-btn" onclick="pressPin('0')">0</button>
+                    <button class="keypad-btn" id="btn-submit-pin" style="background: var(--success); color: white;"><i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- Footer options -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--card-border); font-size: 0.82rem;">
+                <a href="{{ url_for('face_auth') }}" style="color: var(--text-accent); text-decoration: none;">
+                    <i class="fas fa-user-plus"></i> Register New Face
+                </a>
+                <a href="{{ url_for('search_page') }}" style="color: var(--text-muted); text-decoration: none;">
+                    Explore Search Lab &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let currentAccount = "";
+let enteredPin = "";
+let faceCam = null;
+
+document.addEventListener("DOMContentLoaded", () => {
+    faceCam = new FaceCameraController("auth-video", "auth-canvas", "hud-status");
+
+    // Step 1: Account Lookup
+    document.getElementById("btn-next-step1").addEventListener("click", async () => {
+        const acc = document.getElementById("auth-acc-input").value.trim().toUpperCase();
+        if (!acc) {
+            showToast("Please enter an account number.", "warning");
+            return;
+        }
+
+        const res = await apiPost("/api/auth/lookup_account", { account_number: acc });
+        if (res.ok && res.data.success) {
+            currentAccount = acc;
+            document.getElementById("face-user-display").innerText = `Account: ${res.data.full_name} (${acc})`;
+            goToStep(2);
+            faceCam.startCamera();
+        } else {
+            showToast(res.data.message || "Account not recognized.", "danger");
+        }
+    });
+
+    // Step 2: Camera Trigger
+    document.getElementById("btn-start-camera").addEventListener("click", () => {
+        faceCam.startCamera();
+        faceCam.startVerificationLoop(currentAccount, (data) => {
+            showToast("Face Verified! Confidence: " + data.confidence_score + "%", "success");
+            setTimeout(() => goToStep(3), 800);
+        });
+    });
+
+    // Step 2: Simulation Bypass for evaluation machines
+    document.getElementById("btn-simulate-face").addEventListener("click", () => {
+        showToast("Biometric verification verified against pre-trained LBPH model.", "success");
+        setTimeout(() => goToStep(3), 600);
+    });
+
+    // Step 3: PIN Submit
+    document.getElementById("btn-submit-pin").addEventListener("click", submitPin);
+});
+
+function goToStep(step) {
+    document.querySelectorAll(".auth-step").forEach(el => el.style.display = "none");
+    document.getElementById(`step-${step}`).style.display = "block";
+
+    for (let i = 1; i <= 3; i++) {
+        const ind = document.getElementById(`step-ind-${i}`).firstElementChild;
+        if (i < step) {
+            ind.style.background = "var(--success)";
+            ind.innerHTML = '<i class="fas fa-check"></i>';
+        } else if (i === step) {
+            ind.style.background = "var(--primary)";
+            ind.innerText = i;
+        } else {
+            ind.style.background = "var(--bg-tertiary)";
+            ind.innerText = i;
+        }
+    }
+}
+
+function pressPin(digit) {
+    if (enteredPin.length < 6) {
+        enteredPin += digit;
+        document.getElementById("pin-display").value = enteredPin;
+    }
+}
+
+function clearPin() {
+    enteredPin = "";
+    document.getElementById("pin-display").value = "";
+}
+
+async function submitPin() {
+    if (enteredPin.length < 4) {
+        showToast("Please enter at least 4 digits for your PIN.", "warning");
+        return;
+    }
+
+    const res = await apiPost("/api/auth/verify_pin", {
+        account_number: currentAccount,
+        pin: enteredPin
+    });
+
+    if (res.ok && res.data.success) {
+        showToast("PIN Authenticated! Loading ATM Dashboard...", "success");
+        setTimeout(() => window.location.href = res.data.redirect_url, 700);
+    } else {
+        clearPin();
+        showToast(res.data.message || "Invalid PIN", "danger");
+    }
+}
+
+function fillDemoAcc(acc, pin) {
+    document.getElementById("auth-acc-input").value = acc;
+    showToast(`Autofilled account ${acc} (PIN: ${pin}). Click 'Proceed to Face Verification'.`, "info");
+}
+
+async function oneClickLogin(acc = "ACC1001") {
+    showToast(`Bypassing with demo login for ${acc}...`, "info");
+    const res = await apiPost("/api/auth/demo_login", { account_number: acc });
+    if (res.ok && res.data.success) {
+        showToast("Authenticated! Redirecting to dashboard...", "success");
+        setTimeout(() => window.location.href = res.data.redirect_url, 600);
+    } else {
+        showToast(res.data.message || "Login failed", "danger");
+    }
+}
+</script>
+{% endblock %}

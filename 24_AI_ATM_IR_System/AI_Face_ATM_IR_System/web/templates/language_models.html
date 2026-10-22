@@ -1,0 +1,436 @@
+{% extends "base.html" %}
+
+{% block title %}Language Models Laboratory | AI Face ATM & IR System{% endblock %}
+{% block page_title %}Language Models for Information Retrieval{% endblock %}
+
+{% block content %}
+<!-- Module Tabs -->
+<div class="card-custom mb-4" style="padding: 0.75rem 1rem;">
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="btn-custom btn-primary-custom tab-trigger active" onclick="showLmTab('tab-fa', this)">
+            <i class="fas fa-network-wired"></i> Finite Automata
+        </button>
+        <button class="btn-custom btn-outline-custom tab-trigger" onclick="showLmTab('tab-ngram', this)">
+            <i class="fas fa-cubes-stacked"></i> N-Gram Models
+        </button>
+        <button class="btn-custom btn-outline-custom tab-trigger" onclick="showLmTab('tab-multinomial', this)">
+            <i class="fas fa-chart-simple"></i> Multinomial Distribution
+        </button>
+        <button class="btn-custom btn-outline-custom tab-trigger" onclick="showLmTab('tab-lmrank', this)">
+            <i class="fas fa-ranking-star"></i> Query Likelihood Ranking
+        </button>
+        <button class="btn-custom btn-outline-custom tab-trigger" onclick="showLmTab('tab-dfr', this)">
+            <i class="fas fa-calculator"></i> Divergence From Randomness
+        </button>
+        <button class="btn-custom btn-outline-custom tab-trigger" onclick="showLmTab('tab-passage', this)">
+            <i class="fas fa-file-lines"></i> Passage Retrieval
+        </button>
+        <button class="btn-custom btn-outline-custom tab-trigger" onclick="showLmTab('tab-eval', this)">
+            <i class="fas fa-bullseye"></i> IR Evaluation Metrics
+        </button>
+    </div>
+</div>
+
+<!-- 1. Finite Automata Tab -->
+<div id="tab-fa" class="lm-tab-content">
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card-custom">
+                <div class="card-title-custom">
+                    <span><i class="fas fa-terminal text-info"></i> Query Finite Automaton (DFA)</span>
+                </div>
+                <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    Validates Boolean IR queries using a deterministic finite-state query processor supporting <code>AND</code>, <code>OR</code>, and <code>NOT</code>.
+                </p>
+                <div style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">ENTER BOOLEAN QUERY</label>
+                    <input type="text" id="fa-query-input" value="face AND recognition" style="width: 100%; padding: 0.7rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main); font-family: monospace;">
+                </div>
+                <button id="btn-run-fa" class="btn-custom btn-primary-custom" style="width: 100%; justify-content: center;">
+                    <i class="fas fa-play"></i> Process Through Automaton
+                </button>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card-custom">
+                <div class="card-title-custom">
+                    <span><i class="fas fa-diagram-project text-success"></i> Automaton Execution Result</span>
+                    <span id="fa-status-badge" class="badge-custom badge-info">Awaiting Input</span>
+                </div>
+                <div id="fa-explanation" style="font-size: 0.88rem; margin-bottom: 1rem; color: var(--text-muted);">
+                    Run a query to view state transitions.
+                </div>
+                <div class="table-responsive">
+                    <table class="table-custom">
+                        <thead>
+                            <tr>
+                                <th>Step</th>
+                                <th>From State</th>
+                                <th>Input Token</th>
+                                <th>To State</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fa-transitions-body">
+                            <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No execution history.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. N-Gram Models Tab -->
+<div id="tab-ngram" class="lm-tab-content" style="display: none;">
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card-custom">
+                <div class="card-title-custom">
+                    <span><i class="fas fa-spell-check text-warning"></i> N-Gram Language Model Perplexity</span>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <label style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">TEST SENTENCE</label>
+                    <textarea id="ngram-sentence-input" rows="3" style="width: 100%; padding: 0.7rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main); font-size: 0.9rem;">Biometric ATM security uses face recognition to authenticate users during transactions.</textarea>
+                </div>
+                <button id="btn-run-ngram" class="btn-custom btn-primary-custom" style="width: 100%; justify-content: center;">
+                    <i class="fas fa-calculator"></i> Compute Probabilities & Perplexity
+                </button>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="row g-3" id="ngram-cards-container">
+                <!-- Unigram Card -->
+                <div class="col-md-4">
+                    <div class="card-custom text-center">
+                        <span class="badge-custom badge-info" style="margin-bottom: 0.5rem;">Unigram (1-gram)</span>
+                        <div id="ngram-uni-prob" style="font-size: 1.1rem; font-weight: 700; font-family: monospace;">-</div>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Perplexity: <strong id="ngram-uni-perp">-</strong></p>
+                    </div>
+                </div>
+                <!-- Bigram Card -->
+                <div class="col-md-4">
+                    <div class="card-custom text-center">
+                        <span class="badge-custom badge-success" style="margin-bottom: 0.5rem;">Bigram (2-gram)</span>
+                        <div id="ngram-bi-prob" style="font-size: 1.1rem; font-weight: 700; font-family: monospace;">-</div>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Perplexity: <strong id="ngram-bi-perp">-</strong></p>
+                    </div>
+                </div>
+                <!-- Trigram Card -->
+                <div class="col-md-4">
+                    <div class="card-custom text-center">
+                        <span class="badge-custom badge-warning" style="margin-bottom: 0.5rem;">Trigram (3-gram)</span>
+                        <div id="ngram-tri-prob" style="font-size: 1.1rem; font-weight: 700; font-family: monospace;">-</div>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">Perplexity: <strong id="ngram-tri-perp">-</strong></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-custom mt-3">
+                <h4 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;">Formula & Smoothing</h4>
+                <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">
+                    Perplexity measures how well the probability model predicts a sample. Lower perplexity indicates higher generative probability.
+                    Laplace add-one smoothing is applied: <code>P(w|h) = (C(h,w) + 1) / (C(h) + |V|)</code>.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Multinomial Distribution Tab -->
+<div id="tab-multinomial" class="lm-tab-content" style="display: none;">
+    <div class="card-custom">
+        <div class="card-title-custom">
+            <span><i class="fas fa-chart-bar text-accent"></i> Multinomial Word Frequency & Probability Distribution</span>
+            <button class="btn-custom btn-outline-custom" onclick="loadMultinomial()"><i class="fas fa-rotate"></i> Refresh</button>
+        </div>
+        <div style="height: 320px; position: relative;">
+            <canvas id="multinomialChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- 4. Query Likelihood LM Ranking Tab -->
+<div id="tab-lmrank" class="lm-tab-content" style="display: none;">
+    <div class="card-custom">
+        <div class="card-title-custom">
+            <span><i class="fas fa-magnifying-glass text-info"></i> Query Likelihood Language Model Ranker</span>
+        </div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-8">
+                <input type="text" id="lmrank-query-input" value="face recognition ATM security" style="width: 100%; padding: 0.65rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+            </div>
+            <div class="col-md-2">
+                <select id="lmrank-smoothing" style="width: 100%; padding: 0.65rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+                    <option value="dirichlet">Dirichlet Prior</option>
+                    <option value="jm">Jelinek-Mercer</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button id="btn-run-lmrank" class="btn-custom btn-primary-custom" style="width: 100%; justify-content: center;">Rank</button>
+            </div>
+        </div>
+
+        <div id="lmrank-results-container">
+            <p style="color: var(--text-muted); font-size: 0.88rem;">Click 'Rank' to evaluate documents based on query generation likelihood.</p>
+        </div>
+    </div>
+</div>
+
+<!-- 5. Divergence From Randomness Tab -->
+<div id="tab-dfr" class="lm-tab-content" style="display: none;">
+    <div class="card-custom">
+        <div class="card-title-custom">
+            <span><i class="fas fa-square-root-variable text-warning"></i> Divergence From Randomness (DFR InL2 Ranker)</span>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Calculates document scores using the InL2 model: Inverse Document Frequency (In), Length Normalization 2 (L2), and Laplace after-effect.
+        </p>
+        <div class="row g-3 mb-3">
+            <div class="col-md-10">
+                <input type="text" id="dfr-query-input" value="biometric authentication face recognition" style="width: 100%; padding: 0.65rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+            </div>
+            <div class="col-md-2">
+                <button id="btn-run-dfr" class="btn-custom btn-primary-custom" style="width: 100%; justify-content: center;">Calculate DFR</button>
+            </div>
+        </div>
+
+        <div id="dfr-results-container">
+            <p style="color: var(--text-muted); font-size: 0.88rem;">Click 'Calculate DFR' to view term frequency, document frequency, and DFR scores.</p>
+        </div>
+    </div>
+</div>
+
+<!-- 6. Passage Retrieval Tab -->
+<div id="tab-passage" class="lm-tab-content" style="display: none;">
+    <div class="card-custom">
+        <div class="card-title-custom">
+            <span><i class="fas fa-file-lines text-success"></i> Passage Retrieval with Keyword Highlighting</span>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Segments long documents into sliding windows and pinpoints the most relevant paragraph.
+        </p>
+        <div class="row g-3 mb-3">
+            <div class="col-md-10">
+                <input type="text" id="passage-query-input" value="How does face recognition authenticate an ATM user?" style="width: 100%; padding: 0.65rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+            </div>
+            <div class="col-md-2">
+                <button id="btn-run-passage" class="btn-custom btn-primary-custom" style="width: 100%; justify-content: center;">Retrieve</button>
+            </div>
+        </div>
+
+        <div id="passage-results-container">
+            <p style="color: var(--text-muted); font-size: 0.88rem;">Click 'Retrieve' to extract top matching passages with keyword highlighting.</p>
+        </div>
+    </div>
+</div>
+
+<!-- 7. IR Evaluation Tab -->
+<div id="tab-eval" class="lm-tab-content" style="display: none;">
+    <div class="card-custom">
+        <div class="card-title-custom">
+            <span><i class="fas fa-chart-pie text-danger"></i> Ranking Evaluation (Precision, Recall, F1, MAP)</span>
+        </div>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Calculates gold-standard information retrieval evaluation metrics against relevant ground truths.
+        </p>
+        <div class="row g-3 mb-3">
+            <div class="col-md-6">
+                <label style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">RETRIEVED DOC IDs (RANKED)</label>
+                <input type="text" id="eval-retrieved" value="1, 2, 3, 5, 8, 9, 10" style="width: 100%; padding: 0.6rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+            </div>
+            <div class="col-md-6">
+                <label style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">RELEVANT GROUND TRUTH DOC IDs</label>
+                <input type="text" id="eval-relevant" value="1, 2, 3, 4" style="width: 100%; padding: 0.6rem; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 6px; color: var(--text-main);">
+            </div>
+        </div>
+        <button id="btn-run-eval" class="btn-custom btn-primary-custom" style="margin-bottom: 1.5rem;">Compute Metrics</button>
+
+        <div class="row g-3" id="eval-cards-container">
+            <div class="col-md-2 col-6">
+                <div class="card-custom text-center" style="padding: 1rem;">
+                    <span style="font-size: 0.72rem; color: var(--text-muted);">PRECISION</span>
+                    <h3 id="eval-p" style="font-size: 1.5rem; margin-top: 4px;">-</h3>
+                </div>
+            </div>
+            <div class="col-md-2 col-6">
+                <div class="card-custom text-center" style="padding: 1rem;">
+                    <span style="font-size: 0.72rem; color: var(--text-muted);">RECALL</span>
+                    <h3 id="eval-r" style="font-size: 1.5rem; margin-top: 4px;">-</h3>
+                </div>
+            </div>
+            <div class="col-md-2 col-6">
+                <div class="card-custom text-center" style="padding: 1rem;">
+                    <span style="font-size: 0.72rem; color: var(--text-muted);">F1-SCORE</span>
+                    <h3 id="eval-f1" style="font-size: 1.5rem; margin-top: 4px;">-</h3>
+                </div>
+            </div>
+            <div class="col-md-2 col-6">
+                <div class="card-custom text-center" style="padding: 1rem;">
+                    <span style="font-size: 0.72rem; color: var(--text-muted);">P@3</span>
+                    <h3 id="eval-p3" style="font-size: 1.5rem; margin-top: 4px;">-</h3>
+                </div>
+            </div>
+            <div class="col-md-2 col-6">
+                <div class="card-custom text-center" style="padding: 1rem;">
+                    <span style="font-size: 0.72rem; color: var(--text-muted);">P@5</span>
+                    <h3 id="eval-p5" style="font-size: 1.5rem; margin-top: 4px;">-</h3>
+                </div>
+            </div>
+            <div class="col-md-2 col-6">
+                <div class="card-custom text-center" style="padding: 1rem;">
+                    <span style="font-size: 0.72rem; color: var(--text-muted);">AVG PRECISION</span>
+                    <h3 id="eval-ap" style="font-size: 1.5rem; margin-top: 4px;">-</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function showLmTab(tabId, btn) {
+    document.querySelectorAll(".lm-tab-content").forEach(el => el.style.display = "none");
+    document.getElementById(tabId).style.display = "block";
+    document.querySelectorAll(".tab-trigger").forEach(b => {
+        b.className = "btn-custom btn-outline-custom tab-trigger";
+    });
+    btn.className = "btn-custom btn-primary-custom tab-trigger active";
+
+    if (tabId === "tab-multinomial") {
+        loadMultinomial();
+    }
+}
+
+// 1. FA
+document.getElementById("btn-run-fa").addEventListener("click", async () => {
+    const q = document.getElementById("fa-query-input").value.trim();
+    const res = await apiPost("/api/lm/automaton", { query: q });
+    if (res.ok) {
+        const badge = document.getElementById("fa-status-badge");
+        badge.className = res.data.accepted ? "badge-custom badge-success" : "badge-custom badge-danger";
+        badge.innerText = res.data.accepted ? "ACCEPTED" : "REJECTED";
+        document.getElementById("fa-explanation").innerText = res.data.reason;
+
+        const tbody = document.getElementById("fa-transitions-body");
+        tbody.innerHTML = "";
+        res.data.transitions.forEach(tr => {
+            tbody.innerHTML += `
+                <tr>
+                    <td>${tr.step}</td>
+                    <td><code>${tr.from}</code></td>
+                    <td><strong style="color: var(--text-accent);">${tr.input}</strong></td>
+                    <td><code>${tr.to}</code></td>
+                </tr>
+            `;
+        });
+    }
+});
+
+// 2. N-Gram
+document.getElementById("btn-run-ngram").addEventListener("click", async () => {
+    const sent = document.getElementById("ngram-sentence-input").value.trim();
+    const res = await apiPost("/api/lm/ngram", { sentence: sent });
+    if (res.ok) {
+        const d = res.data;
+        document.getElementById("ngram-uni-prob").innerText = d.unigram.prob_scientific;
+        document.getElementById("ngram-uni-perp").innerText = d.unigram.perplexity;
+        document.getElementById("ngram-bi-prob").innerText = d.bigram.prob_scientific;
+        document.getElementById("ngram-bi-perp").innerText = d.bigram.perplexity;
+        document.getElementById("ngram-tri-prob").innerText = d.trigram.prob_scientific;
+        document.getElementById("ngram-tri-perp").innerText = d.trigram.perplexity;
+    }
+});
+
+// 3. Multinomial
+async function loadMultinomial() {
+    const res = await apiGet("/api/lm/multinomial?top_k=20");
+    if (res.ok) {
+        renderBarChart("multinomialChart", res.data.chart_data.labels, res.data.chart_data.frequencies, "Word Frequency");
+    }
+}
+
+// 4. LM Rank
+document.getElementById("btn-run-lmrank").addEventListener("click", async () => {
+    const q = document.getElementById("lmrank-query-input").value.trim();
+    const smoothing = document.getElementById("lmrank-smoothing").value;
+    const res = await apiPost("/api/lm/rank", { query: q, smoothing: smoothing });
+    if (res.ok) {
+        const c = document.getElementById("lmrank-results-container");
+        c.innerHTML = "";
+        res.data.results.forEach(item => {
+            c.innerHTML += `
+                <div style="padding: 12px; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 8px; margin-bottom: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4 style="font-size: 0.95rem; margin: 0;">#${item.rank} &bull; ${item.title}</h4>
+                        <span class="badge-custom badge-info">Score: ${item.score}</span>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 6px 0;">${item.content_preview}</p>
+                    <div style="font-size: 0.72rem; color: var(--text-accent);">Matched Terms: ${item.matched_terms.join(", ") || "None"}</div>
+                </div>
+            `;
+        });
+    }
+});
+
+// 5. DFR Rank
+document.getElementById("btn-run-dfr").addEventListener("click", async () => {
+    const q = document.getElementById("dfr-query-input").value.trim();
+    const res = await apiPost("/api/lm/dfr", { query: q });
+    if (res.ok) {
+        const c = document.getElementById("dfr-results-container");
+        c.innerHTML = "";
+        res.data.results.forEach(item => {
+            let termsHtml = item.term_breakdown.map(t => `<span class="badge-custom badge-warning">${t.term} (TF:${t.tf}, DF:${t.df}, InL2:${t.term_score})</span>`).join(" ");
+            c.innerHTML += `
+                <div style="padding: 12px; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 8px; margin-bottom: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h4 style="font-size: 0.95rem; margin: 0;">#${item.rank} &bull; ${item.title}</h4>
+                        <span class="badge-custom badge-success">DFR Score: ${item.score}</span>
+                    </div>
+                    <div style="margin-top: 6px;">${termsHtml}</div>
+                </div>
+            `;
+        });
+    }
+});
+
+// 6. Passage Retrieval
+document.getElementById("btn-run-passage").addEventListener("click", async () => {
+    const q = document.getElementById("passage-query-input").value.trim();
+    const res = await apiPost("/api/lm/passage", { query: q });
+    if (res.ok) {
+        const c = document.getElementById("passage-results-container");
+        c.innerHTML = "";
+        res.data.results.forEach(item => {
+            c.innerHTML += `
+                <div style="padding: 14px; background: var(--bg-secondary); border: 1px solid var(--card-border); border-radius: 8px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                        <strong style="color: var(--text-accent); font-size: 0.9rem;">From: ${item.title}</strong>
+                        <span class="badge-custom badge-info">Passage Score: ${item.score}</span>
+                    </div>
+                    <div style="font-size: 0.88rem; line-height: 1.6; color: var(--text-main);">${item.highlighted_text}</div>
+                </div>
+            `;
+        });
+    }
+});
+
+// 7. IR Evaluation
+document.getElementById("btn-run-eval").addEventListener("click", async () => {
+    const ret = document.getElementById("eval-retrieved").value.split(",").map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+    const rel = document.getElementById("eval-relevant").value.split(",").map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+    const res = await apiPost("/api/lm/evaluate", { retrieved: ret, relevant: rel });
+    if (res.ok) {
+        document.getElementById("eval-p").innerText = (res.data.precision * 100).toFixed(1) + "%";
+        document.getElementById("eval-r").innerText = (res.data.recall * 100).toFixed(1) + "%";
+        document.getElementById("eval-f1").innerText = res.data.f1_score.toFixed(3);
+        document.getElementById("eval-p3").innerText = (res.data.p_at_3 * 100).toFixed(1) + "%";
+        document.getElementById("eval-p5").innerText = (res.data.p_at_5 * 100).toFixed(1) + "%";
+        document.getElementById("eval-ap").innerText = res.data.average_precision.toFixed(3);
+    }
+});
+</script>
+{% endblock %}

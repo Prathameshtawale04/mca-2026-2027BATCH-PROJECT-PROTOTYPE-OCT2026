@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Register Demo Account &bull; Mira AI Smart ATM{% endblock %}
+{% block breadcrumb %}Registration{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 75vh;">
+    <div class="col-md-7 col-lg-5">
+        <div class="card-custom">
+            <div class="text-center mb-4">
+                <div class="d-inline-flex p-3 rounded-circle mb-3" style="background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.25);">
+                    <i class="fas fa-user-plus text-primary fs-1"></i>
+                </div>
+                <h4 class="fw-bold mb-1 text-white">Create New Demo Account</h4>
+                <p class="text-secondary small mb-0">Register a customer profile with linked ATM banking ledger</p>
+            </div>
+
+            <form action="{{ url_for('auth.register') }}" method="POST">
+                <div class="mb-3">
+                    <label class="form-label small text-secondary fw-semibold">FULL NAME</label>
+                    <input type="text" class="form-control bg-dark border-secondary text-white" name="full_name" placeholder="e.g. Dr. Jane Doe" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small text-secondary fw-semibold">USERNAME</label>
+                    <input type="text" class="form-control bg-dark border-secondary text-white" name="username" placeholder="e.g. jane" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small text-secondary fw-semibold">EMAIL ADDRESS</label>
+                    <input type="email" class="form-control bg-dark border-secondary text-white" name="email" placeholder="e.g. jane@atm-system.local" required>
+                </div>
+
+                <div class="row g-2 mb-3">
+                    <div class="col-md-7">
+                        <label class="form-label small text-secondary fw-semibold">PASSWORD</label>
+                        <input type="password" class="form-control bg-dark border-secondary text-white" name="password" placeholder="••••••••" required>
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label small text-secondary fw-semibold">ATM PIN (4-DIGIT)</label>
+                        <input type="password" class="form-control bg-dark border-secondary text-white" name="pin" placeholder="1234" maxlength="4" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold d-flex align-items-center justify-content-center gap-2">
+                    <i class="fas fa-check"></i> Complete Registration
+                </button>
+            </form>
+
+            <div class="text-center mt-3 pt-3 border-top border-secondary-subtle">
+                <span class="text-secondary small">Already have an account?</span>
+                <a href="{{ url_for('auth.login') }}" class="text-info small fw-semibold text-decoration-none ms-1">Sign In</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}System Analytics & Telemetry | AI Face ATM & IR System{% endblock %}
+{% block page_title %}System Telemetry & Performance Analytics{% endblock %}
+
+{% block content %}
+
+<!-- Admin Quick Actions -->
+<div class="card-custom mb-4" style="border-left: 4px solid var(--primary);">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h4 style="margin: 0; font-size: 1.1rem;"><i class="fas fa-microchip"></i> Biometric Model Training Hub</h4>
+            <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--text-muted);">Easily trigger mass re-training of all registered LBPH face models to improve accuracy and accessibility.</p>
+        </div>
+        <button id="btn-train-all" class="btn-custom btn-primary-custom">
+            <i class="fas fa-cogs"></i> Train All Models
+        </button>
+    </div>
+</div>
+
+<!-- Top Metrics Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-2 col-6">
+        <div class="stat-card">
+            <div class="stat-info">
+                <h3 id="stat-docs">-</h3>
+                <p>Indexed Documents</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-6">
+        <div class="stat-card">
+            <div class="stat-info">
+                <h3 id="stat-triples">-</h3>
+                <p>Semantic Triples</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-6">
+        <div class="stat-card">
+            <div class="stat-info">
+                <h3 id="stat-crawled">-</h3>
+                <p>Crawled Pages</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-6">
+        <div class="stat-card">
+            <div class="stat-info">
+                <h3 id="stat-queries">-</h3>
+                <p>Queries Executed</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-6">
+        <div class="stat-card">
+            <div class="stat-info">
+                <h3 id="stat-tx">-</h3>
+                <p>Transactions Logged</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 col-6">
+        <div class="stat-card">
+            <div class="stat-info">
+                <h3 id="stat-users">-</h3>
+                <p>Active Users</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="card-custom">
+            <div class="card-title-custom">
+                <span><i class="fas fa-chart-line text-info"></i> Query Latency & Activity</span>
+            </div>
+            <div style="height: 260px;">
+                <canvas id="queryLatencyChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card-custom">
+            <div class="card-title-custom">
+                <span><i class="fas fa-chart-pie text-success"></i> ATM Transaction Distribution</span>
+            </div>
+            <div style="height: 260px;">
+                <canvas id="txDistributionChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Telemetry Logs Row -->
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card-custom">
+            <div class="card-title-custom">
+                <span><i class="fas fa-history text-accent"></i> Recent Search Telemetry</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>Query</th>
+                            <th>Hits</th>
+                            <th>Latency</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analytics-queries-body">
+                        <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Loading queries...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card-custom">
+            <div class="card-title-custom">
+                <span><i class="fas fa-shield-halved text-warning"></i> Recent Security Audit Trail</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Details</th>
+                            <th>IP</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="analytics-security-body">
+                        <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Loading security logs...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", async () => {
+    // Train All Models button listener
+    document.getElementById('btn-train-all')?.addEventListener('click', async () => {
+        const btn = document.getElementById('btn-train-all');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Training...';
+        btn.disabled = true;
+        
+        try {
+            const res = await apiPost('/api/admin/train_all', {});
+            if(res.ok && res.data.success) {
+                showToast(res.data.message, 'success');
+            } else {
+                showToast(res.data.message || 'Training failed.', 'danger');
+            }
+        } catch(e) {
+            showToast('Network error.', 'danger');
+        } finally {
+            btn.innerHTML = '<i class="fas fa-cogs"></i> Train All Models';
+            btn.disabled = false;
+        }
+    });
+
+    const res = await apiGet("/api/analytics/data");
+    if (res.ok) {
+        const d = res.data;
+        const c = d.counters;
+        document.getElementById("stat-docs").innerText = c.total_documents;
+        document.getElementById("stat-triples").innerText = c.total_knowledge_triples;
+        document.getElementById("stat-crawled").innerText = c.total_crawled_pages;
+        document.getElementById("stat-queries").innerText = c.total_search_queries;
+        document.getElementById("stat-tx").innerText = c.total_transactions;
+        document.getElementById("stat-users").innerText = c.total_users;
+
+        // Query Latency Chart
+        const qLabels = d.recent_queries.map(q => q.query_text.substring(0, 15) + "...");
+        const qLatencies = d.recent_queries.map(q => q.response_time_ms);
+        renderBarChart("queryLatencyChart", qLabels, qLatencies, "Latency (ms)", "#38bdf8");
+
+        // Transaction Chart
+        const txCtx = document.getElementById("txDistributionChart");
+        const txTypes = d.transactions_by_type.map(t => t.type);
+        const txCounts = d.transactions_by_type.map(t => t.count);
+        new Chart(txCtx, {
+            type: 'doughnut',
+            data: {
+                labels: txTypes,
+                datasets: [{
+                    data: txCounts,
+                    backgroundColor: ["#10b981", "#f59e0b", "#38bdf8"]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Populate query logs table
+        const qBody = document.getElementById("analytics-queries-body");
+        qBody.innerHTML = "";
+        d.recent_queries.forEach(q => {
+            qBody.innerHTML += `
+                <tr>
+                    <td><strong>${q.query_text}</strong></td>
+                    <td><span class="badge-custom badge-info">${q.results_count}</span></td>
+                    <td>${q.response_time_ms} ms</td>
+                    <td style="font-size: 0.75rem; color: var(--text-muted);">${q.timestamp}</td>
+                </tr>
+            `;
+        });
+
+        // Populate security logs table
+        const sBody = document.getElementById("analytics-security-body");
+        sBody.innerHTML = "";
+        d.recent_security_events.forEach(s => {
+            sBody.innerHTML += `
+                <tr>
+                    <td><span class="badge-custom badge-warning">${s.event_type}</span></td>
+                    <td style="font-size: 0.8rem;">${s.details}</td>
+                    <td style="font-family: monospace; font-size: 0.78rem;">${s.ip_address}</td>
+                    <td style="font-size: 0.75rem; color: var(--text-muted);">${s.timestamp}</td>
+                </tr>
+            `;
+        });
+    }
+});
+</script>
+{% endblock %}

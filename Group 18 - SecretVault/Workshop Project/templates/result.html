@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% block title %}Decoded Message{% endblock %}
+
+{% block content %}
+<div class="page-container page-narrow">
+    <div class="result-success-header">
+        <div class="result-checkmark">
+            <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                <path d="M8 12l3 3 5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <h1>Message Decoded Successfully</h1>
+        <p>All security layers passed. The secret message has been recovered and decrypted.</p>
+    </div>
+
+    <!-- Security verification summary -->
+    <div class="glass-card verification-card">
+        <h2>Security Verification</h2>
+        <div class="verification-grid">
+            <div class="verification-item pass">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <span>LSB Extraction</span>
+            </div>
+            <div class="verification-item pass">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <span>Chunk Integrity</span>
+            </div>
+            <div class="verification-item pass">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <span>SHA-256 Hash</span>
+            </div>
+
+            <!-- Receiver face auth — always passes (gate before decode) -->
+            <div class="verification-item pass">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <span>Receiver Face Auth</span>
+            </div>
+
+            <!-- Sender face verification (v2 only) -->
+            {% if message.is_legacy %}
+            <div class="verification-item warning">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>
+                <span>Sender Verify (Legacy)</span>
+            </div>
+            {% elif sender_verification_skipped is defined and sender_verification_skipped %}
+            <div class="verification-item warning">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>
+                <span>Sender Verify (Skipped)</span>
+            </div>
+            {% else %}
+            <div class="verification-item pass">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <span>Sender Face Verified</span>
+            </div>
+            {% endif %}
+
+            <!-- LSTM validation -->
+            {% if lstm_validation is defined %}
+                {% if lstm_validation.skipped %}
+                <div class="verification-item warning">
+                    <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>
+                    <span>LSTM (Unavailable)</span>
+                </div>
+                {% else %}
+                <div class="verification-item pass">
+                    <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    <span>LSTM Validated</span>
+                </div>
+                {% endif %}
+            {% endif %}
+
+            <div class="verification-item pass">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <span>AES Decryption</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message metadata -->
+    <div class="glass-card meta-card">
+        <h2>Message Information</h2>
+        <div class="meta-grid">
+            <div class="meta-item">
+                <span class="meta-label">Session ID</span>
+                <span class="meta-value mono">{{ message.message_id[:16] }}…</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Type</span>
+                <span class="meta-value">{{ message.data_type.title() }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Total Chunks</span>
+                <span class="meta-value">{{ message.total_chunks }} images</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Sender</span>
+                <span class="meta-value">{{ message.sender.username if message.sender else 'Unknown' }}</span>
+            </div>
+            {% if not message.is_legacy %}
+            <div class="meta-item">
+                <span class="meta-label">Intended Receiver</span>
+                <span class="meta-value">{{ message.receiver.username if message.receiver else 'Unknown' }}</span>
+            </div>
+            {% endif %}
+            <div class="meta-item">
+                <span class="meta-label">Encoded At</span>
+                <span class="meta-value">{{ message.created_at.strftime('%d %b %Y, %H:%M') }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Decoded At</span>
+                <span class="meta-value">{{ message.decoded_at.strftime('%d %b %Y, %H:%M') if message.decoded_at else 'Just now' }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Status</span>
+                <span class="badge badge-success">Decoded</span>
+            </div>
+            {% if message.is_legacy %}
+            <div class="meta-item">
+                <span class="meta-label">Mode</span>
+                <span class="badge badge-warning">Legacy Message</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- LSTM details (if available) -->
+        {% if lstm_validation is defined and not lstm_validation.skipped and lstm_validation.similarity is not none %}
+        <div class="result-highlight-card lstm-card">
+            <div class="highlight-header">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <strong>LSTM Sequence Validation</strong>
+            </div>
+            <div class="highlight-body">
+                <span>Cosine Similarity: <strong>{{ lstm_validation.similarity }}</strong></span>
+                <span>Threshold: <strong>{{ lstm_validation.threshold }}</strong></span>
+                <span class="badge badge-success">✓ Passed</span>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Image quality metrics for first stego image -->
+        {% if message.stego_images %}
+        {% set first = message.stego_images[0] %}
+        <div class="result-highlight-card metrics-card">
+            <div class="highlight-header">
+                <svg viewBox="0 0 24 24" fill="none" width="18" height="18"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" stroke="currentColor" stroke-width="2"/><polyline points="3.27 6.96 12 12.01 20.73 6.96" stroke="currentColor" stroke-width="2"/><line x1="12" y1="22.08" x2="12" y2="12" stroke="currentColor" stroke-width="2"/></svg>
+                <strong>Image Quality Metrics (Carrier 1)</strong>
+            </div>
+            <div class="metrics-grid">
+                <div class="metric-chip">
+                    <span class="metric-chip-label">MSE</span>
+                    <span class="metric-chip-val">{{ '%.4f' | format(first.mse) if first.mse is not none else 'N/A' }}</span>
+                </div>
+                <div class="metric-chip">
+                    <span class="metric-chip-label">PSNR</span>
+                    <span class="metric-chip-val">{{ '%.2f dB' | format(first.psnr) if first.psnr is not none else 'N/A' }}</span>
+                </div>
+                <div class="metric-chip">
+                    <span class="metric-chip-label">SSIM</span>
+                    <span class="metric-chip-val">{{ '%.4f' | format(first.ssim) if first.ssim is not none else 'N/A' }}</span>
+                </div>
+                {% if first.ae_reconstruction_loss is not none %}
+                <div class="metric-chip">
+                    <span class="metric-chip-label">AE Loss</span>
+                    <span class="metric-chip-val">{{ '%.6f' | format(first.ae_reconstruction_loss) }}</span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Decoded text -->
+    <div class="glass-card decoded-card">
+        <div class="card-header">
+            <h2>
+                <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="2"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                Decoded Message
+            </h2>
+            <button class="btn btn-outline btn-sm" id="copyBtn" data-target="decodedText">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="2"/></svg>
+                Copy
+            </button>
+        </div>
+        <div class="decoded-text-wrapper">
+            <pre id="decodedText" class="decoded-text">{{ decoded_text }}</pre>
+        </div>
+        <div class="decoded-meta">
+            <span>{{ decoded_text | length }} characters</span>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="result-actions">
+        <a href="{{ url_for('encode.encode') }}" class="btn btn-primary">
+            Encode Another
+        </a>
+        <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline">
+            Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<script>
+// Copy button
+const copyBtn = document.getElementById('copyBtn');
+if (copyBtn) {
+    copyBtn.addEventListener('click', function () {
+        const text = document.getElementById(this.dataset.target).textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => { copyBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="2"/></svg> Copy'; }, 2000);
+        });
+    });
+}
+</script>
+{% endblock %}

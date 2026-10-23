@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inv-Folio — Investment Portfolio Management</title>
+  <meta name="description" content="Track, analyze, and manage all your investments — stocks, mutual funds, ETFs, crypto, and more — from a single unified dashboard." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="20" width="6" height="8" rx="1.5" fill="#3b82f6"/>
+            <rect x="13" y="13" width="6" height="15" rx="1.5" fill="#06b6d4"/>
+            <rect x="22" y="6" width="6" height="22" rx="1.5" fill="#10b981"/>
+            <path d="M7 18L13 11L19 14L27 5" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="27" cy="5" r="2" fill="#34d399"/>
+          </svg>
+        </div>
+        <span class="logo-text">Inv-Folio</span>
+      </div>
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12h18M3 6h18M3 18h18"/>
+        </svg>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" id="nav-dashboard" onclick="showPage('dashboard', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Dashboard</span>
+      </a>
+      <a href="#" class="nav-item" id="nav-holdings" onclick="showPage('holdings', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><path d="M16 3H8l-2 4h12l-2-4z"/></svg>
+        <span>Holdings</span>
+      </a>
+      <a href="#" class="nav-item" id="nav-transactions" onclick="showPage('transactions', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        <span>Transactions</span>
+      </a>
+      <a href="#" class="nav-item" id="nav-analytics" onclick="showPage('analytics', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        <span>Analytics</span>
+      </a>
+      <a href="#" class="nav-item" id="nav-alerts" onclick="showPage('alerts', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <span>Alerts</span>
+        <span class="badge">3</span>
+      </a>
+      <a href="#" class="nav-item" id="nav-accounts" onclick="showPage('accounts', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+        <span>Accounts</span>
+      </a>
+      <a href="#" class="nav-item" id="nav-integrations" onclick="showPage('integrations', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/><path d="M15.54 8.46a5 5 0 010 7.07M8.46 8.46a5 5 0 000 7.07"/></svg>
+        <span>Integrations</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sync-status">
+        <div class="sync-dot"></div>
+        <span>Synced 2 min ago</span>
+      </div>
+      <button class="btn-ghost btn-sm" id="refreshBtn" onclick="handleRefresh()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+        Refresh
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main" id="main">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title" id="pageTitle">Dashboard</h1>
+      </div>
+      <div class="topbar-right">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Search holdings..." id="searchInput" />
+        </div>
+        <button class="btn-primary btn-sm" onclick="openAddHoldingModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Holding
+        </button>
+        <div class="avatar" title="Prathamesh">P</div>
+      </div>
+    </header>
+
+    <!-- Pages -->
+    <div class="pages">
+
+      <!-- ===== DASHBOARD PAGE ===== -->
+      <section class="page active" id="page-dashboard">
+
+        <!-- Net Worth Strip -->
+        <div class="net-worth-strip">
+          <div class="net-worth-main">
+            <span class="label">Total Portfolio Value</span>
+            <div class="net-worth-value">
+              <span id="totalValue">₹18,47,320</span>
+              <div class="change-pill positive">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+                +₹12,460 (0.68%) today
+              </div>
+            </div>
+          </div>
+          <div class="net-worth-stats">
+            <div class="stat-item">
+              <span class="label">Invested</span>
+              <span class="value">₹14,20,000</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <span class="label">Overall Gain</span>
+              <span class="value positive">+₹4,27,320 (+30.1%)</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <span class="label">XIRR</span>
+              <span class="value positive">18.4%</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+              <span class="label">CAGR</span>
+              <span class="value positive">16.2%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="charts-row">
+          <!-- Portfolio Trend Chart -->
+          <div class="card chart-card">
+            <div class="card-header">
+              <h2>Portfolio Value Trend</h2>
+              <div class="time-tabs" role="tablist">
+                <button class="time-tab" onclick="setTimeframe('1D', this)">1D</button>
+                <button class="time-tab active" onclick="setTimeframe('1M', this)">1M</button>
+                <button class="time-tab" onclick="setTimeframe('3M', this)">3M</button>
+                <button class="time-tab" onclick="setTimeframe('1Y', this)">1Y</button>
+                <button class="time-tab" onclick="setTimeframe('All', this)">All</button>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="trendChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Asset Allocation Donut -->
+          <div class="card chart-card-sm">
+            <div class="card-header">
+              <h2>Asset Allocation</h2>
+            </div>
+            <div class="donut-wrapper">
+              <canvas id="allocationChart"></canvas>
+              <div class="donut-center">
+                <span class="donut-label">Total</span>
+                <span class="donut-value">₹18.5L</span>
+              </div>
+            </div>
+            <div class="allocation-legend" id="allocationLegend"></div>
+          </div>
+        </div>
+
+        <!-- Holdings Table + Sector Breakdown -->
+        <div class="bottom-row">
+          <!-- Top Holdings -->
+          <div class="card holdings-card">
+            <div class="card-header">
+              <h2>Top Holdings</h2>
+              <button class="btn-ghost btn-sm" onclick="showPage('holdings', document.getElementById('nav-holdings'))">View All</button>
+            </div>
+            <div class="table-scroll">
+            <table class="data-table" id="holdingsTable">
+              <thead>
+                <tr>
+                  <th>Asset</th>
+                  <th>Class</th>
+                  <th>Qty</th>
+                  <th>Avg Cost</th>
+                  <th>Current</th>
+                  <th>P&amp;L</th>
+                  <th>% Port</th>
+                </tr>
+              </thead>
+              <tbody id="holdingsBody"></tbody>
+            </table>
+            </div>
+          </div>
+
+          <!-- Sector Breakdown -->
+          <div class="card sector-card">
+            <div class="card-header">
+              <h2>Sector Breakdown</h2>
+            </div>
+            <div class="sector-list" id="sectorList"></div>
+          </div>
+        </div>
+
+        <!-- Alerts + Risk Row -->
+        <div class="alerts-risk-row">
+          <!-- Active Alerts -->
+          <div class="card">
+            <div class="card-header">
+              <h2>Active Alerts</h2>
+              <button class="btn-ghost btn-sm" onclick="showPage('alerts', document.getElementById('nav-alerts'))">Manage</button>
+            </div>
+            <div class="alert-list" id="alertList"></div>
+          </div>
+
+          <!-- Risk Flags -->
+          <div class="card">
+            <div class="card-header">
+              <h2>Risk &amp; Concentration</h2>
+            </div>
+            <div class="risk-list" id="riskList"></div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ===== HOLDINGS PAGE ===== -->
+      <section class="page" id="page-holdings">
+        <div class="card">
+          <div class="card-header">
+            <h2>All Holdings</h2>
+            <div class="header-actions">
+              <select class="select-sm" id="holdingFilter" onchange="filterHoldings()">
+                <option value="all">All Classes</option>
+                <option value="equity">Equity</option>
+                <option value="mutual_fund">Mutual Fund</option>
+                <option value="etf">ETF</option>
+                <option value="crypto">Crypto</option>
+                <option value="bond">Bond/FD</option>
+              </select>
+              <button class="btn-primary btn-sm" onclick="openAddHoldingModal()">+ Add Holding</button>
+            </div>
+          </div>
+          <div class="table-scroll">
+          <table class="data-table" id="holdingsTableFull">
+            <thead>
+              <tr>
+                <th>Asset</th>
+                <th>Symbol</th>
+                <th>Class</th>
+                <th>Account</th>
+                <th>Qty</th>
+                <th>Avg Cost</th>
+                <th>LTP</th>
+                <th>Current Value</th>
+                <th>Unrealized P&amp;L</th>
+                <th>% Port</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="holdingsBodyFull"></tbody>
+          </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== TRANSACTIONS PAGE ===== -->
+      <section class="page" id="page-transactions">
+        <div class="card">
+          <div class="card-header">
+            <h2>Transaction History</h2>
+            <div class="header-actions">
+              <select class="select-sm" id="txnFilter">
+                <option value="all">All Types</option>
+                <option value="buy">Buy</option>
+                <option value="sell">Sell</option>
+                <option value="dividend">Dividend</option>
+              </select>
+              <button class="btn-ghost btn-sm">↓ Export CSV</button>
+            </div>
+          </div>
+          <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Asset</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Amount</th>
+                <th>Account</th>
+                <th>Source</th>
+              </tr>
+            </thead>
+            <tbody id="txnBody"></tbody>
+          </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== ANALYTICS PAGE ===== -->
+      <section class="page" id="page-analytics">
+        <div class="analytics-grid">
+          <div class="card metric-card">
+            <div class="metric-label">XIRR (Portfolio)</div>
+            <div class="metric-value positive">18.4%</div>
+            <div class="metric-sub">vs 12.3% Nifty 50 benchmark</div>
+            <div class="metric-badge positive">+6.1% alpha</div>
+          </div>
+          <div class="card metric-card">
+            <div class="metric-label">CAGR (Portfolio)</div>
+            <div class="metric-value positive">16.2%</div>
+            <div class="metric-sub">Since inception (3.2 yrs)</div>
+          </div>
+          <div class="card metric-card">
+            <div class="metric-label">Realized Gains (FY26)</div>
+            <div class="metric-value positive">₹82,450</div>
+            <div class="metric-sub">From 14 sell transactions</div>
+          </div>
+          <div class="card metric-card">
+            <div class="metric-label">Dividend Income (FY26)</div>
+            <div class="metric-value">₹24,120</div>
+            <div class="metric-sub">From 8 dividend payouts</div>
+          </div>
+        </div>
+
+        <!-- Benchmark Comparison Chart -->
+        <div class="card" style="margin-top:1.5rem">
+          <div class="card-header">
+            <h2>Portfolio vs Benchmark</h2>
+            <div class="time-tabs" role="tablist">
+              <button class="time-tab active" onclick="setBenchmarkTf('1Y', this)">1Y</button>
+              <button class="time-tab" onclick="setBenchmarkTf('3Y', this)">3Y</button>
+            </div>
+          </div>
+          <div class="chart-container" style="height:260px">
+            <canvas id="benchmarkChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Target vs Actual Allocation -->
+        <div class="card" style="margin-top:1.5rem">
+          <div class="card-header">
+            <h2>Target vs Actual Allocation</h2>
+            <button class="btn-ghost btn-sm">Edit Target</button>
+          </div>
+          <div class="allocation-bars" id="allocationBars"></div>
+        </div>
+
+        <!-- Rebalancing Suggestions -->
+        <div class="card" style="margin-top:1.5rem">
+          <div class="card-header">
+            <h2>Rebalancing Suggestions</h2>
+            <span class="badge warning">Drift detected</span>
+          </div>
+          <div class="rebalance-list" id="rebalanceList"></div>
+        </div>
+      </section>
+
+      <!-- ===== ALERTS PAGE ===== -->
+      <section class="page" id="page-alerts">
+        <div class="card">
+          <div class="card-header">
+            <h2>Alert Rules</h2>
+            <button class="btn-primary btn-sm" onclick="openAddAlertModal()">+ New Alert</button>
+          </div>
+          <div class="alert-rules-list" id="alertRulesList"></div>
+        </div>
+      </section>
+
+      <!-- ===== ACCOUNTS PAGE ===== -->
+      <section class="page" id="page-accounts">
+        <div class="accounts-grid" id="accountsGrid"></div>
+        <div class="card" style="margin-top:1.5rem">
+          <div class="card-header">
+            <h2>Link New Account</h2>
+          </div>
+          <div class="broker-grid" id="brokerGrid"></div>
+        </div>
+      </section>
+
+      <!-- ===== INTEGRATIONS PAGE ===== -->
+      <section class="page" id="page-integrations">
+
+        <!-- Hero banner -->
+        <div class="integrations-hero">
+          <div class="integrations-hero-icon">🔌</div>
+          <div class="integrations-hero-text">
+            <h2>API Integrations — Connect Your Investment Apps</h2>
+            <p>Add your broker API keys below to automatically fetch live holdings, portfolio value, and transaction history. All keys are stored locally in this session only and are never transmitted to any server.</p>
+          </div>
+        </div>
+
+        <!-- Summary stats (populated by JS) -->
+        <div class="ic-summary-row" id="icSummaryRow"></div>
+
+        <!-- Provider Cards -->
+        <div class="integrations-grid" id="integrationsGrid"></div>
+
+        <!-- Fetch / Sync Log -->
+        <div class="card fetch-log">
+          <div class="fetch-log-header">
+            <div class="log-live-dot"></div>
+            <h3>Sync Activity Log</h3>
+            <button class="btn-ghost btn-sm" style="margin-left:auto" onclick="clearLog()">Clear</button>
+          </div>
+          <div class="fetch-log-body" id="fetchLogBody">
+            <div class="log-line"><span class="log-time">--:--:--</span><span class="log-msg info">Waiting for API connections…</span></div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <!-- Add Holding Modal -->
+  <div class="modal-overlay" id="addHoldingModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Add Holding</h3>
+        <button class="modal-close" onclick="closeAddHoldingModal()">×</button>
+      </div>
+      <form class="modal-form" id="addHoldingForm" onsubmit="submitHolding(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Asset Symbol</label>
+            <input type="text" placeholder="e.g. INFY, BTC" id="holdingSymbol" required />
+          </div>
+          <div class="form-group">
+            <label>Asset Class</label>
+            <select id="holdingClass">
+              <option value="equity">Equity</option>
+              <option value="mutual_fund">Mutual Fund</option>
+              <option value="etf">ETF</option>
+              <option value="crypto">Crypto</option>
+              <option value="bond">Bond/FD</option>
+              <option value="gold">Gold</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Quantity</label>
+            <input type="number" placeholder="0" id="holdingQty" step="0.0001" required />
+          </div>
+          <div class="form-group">
+            <label>Avg. Buy Price (₹)</label>
+            <input type="number" placeholder="0.00" id="holdingPrice" step="0.01" required />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Buy Date</label>
+            <input type="date" id="holdingDate" required />
+          </div>
+          <div class="form-group">
+            <label>Account</label>
+            <select id="holdingAccount">
+              <option value="zerodha">Zerodha</option>
+              <option value="upstox">Upstox</option>
+              <option value="manual">Manual</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" onclick="closeAddHoldingModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Add Holding</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Add Alert Modal -->
+  <div class="modal-overlay" id="addAlertModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Create Alert Rule</h3>
+        <button class="modal-close" onclick="closeAddAlertModal()">×</button>
+      </div>
+      <form class="modal-form" id="addAlertForm" onsubmit="submitAlert(event)">
+        <div class="form-group">
+          <label>Alert Type</label>
+          <select id="alertType">
+            <option value="price_threshold">Price Threshold</option>
+            <option value="percent_change">% Change</option>
+            <option value="drift">Portfolio Drift</option>
+            <option value="dividend">Dividend</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Asset (leave blank for portfolio-level)</label>
+          <input type="text" placeholder="e.g. RELIANCE" id="alertAsset" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Condition</label>
+            <select id="alertOperator">
+              <option value="gt">Above (&gt;)</option>
+              <option value="lt">Below (&lt;)</option>
+              <option value="change_pct">Changes by (%)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Value</label>
+            <input type="number" placeholder="0" id="alertValue" step="0.01" required />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Notification Channel</label>
+          <div class="checkbox-group">
+            <label><input type="checkbox" id="alertEmail" checked /> Email</label>
+            <label><input type="checkbox" id="alertPush" /> Push</label>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" onclick="closeAddAlertModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Create Alert</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

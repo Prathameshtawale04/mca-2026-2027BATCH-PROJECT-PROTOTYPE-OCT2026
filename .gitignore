@@ -1,13 +1,12 @@
-
-# Python bytecode and cache files
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 
-# Native extensions
+# C extensions
 *.so
 
-# Distribution and packaging
+# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -21,60 +20,41 @@ parts/
 sdist/
 var/
 wheels/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
-# PyInstaller
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Tests and coverage
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py.cover
-.hypothesis/
-.pytest_cache/
-cover/
-
-# Django and application logs
-*.log
-
-# Virtual environments
+# Virtual Environments
 .venv/
+env/
 venv/
 ENV/
-env/
+env.bak/
+venv.bak/
 
-# Environment variables and secrets
+# Environment Variables & Secrets (CRITICAL)
 .env
-.env.*
-!.env.example
+.env.local
+.env.*.local
+*.secret.key
 
-# IDE and editor files
+# IDE & Editor Settings
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
-# Operating system files
-.DS_Store
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# OS Specific
 Thumbs.db
+Desktop.ini
+.DS_Store
 
-# Jupyter Notebook checkpoints
-.ipynb_checkpoints/
-
-# Temporary files
-*.tmp
-*.temp
+# MovieFlix Large Raw Dumps (preserve sample / processed data)
+data/raw/*.tmp

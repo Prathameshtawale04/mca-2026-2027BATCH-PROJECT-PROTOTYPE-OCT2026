@@ -1,0 +1,475 @@
+{% extends "base.html" %}
+
+{% block title %}MovieFlix - Intelligent Movie Discovery & Recommendation{% endblock %}
+
+{% block content %}
+
+<!-- Layered Cinematic Hero Section with Top 5 Trending Movies & 5-Second Trailer Reveal -->
+{% if hero_movies %}
+{% set active_movie = hero_movies[0] %}
+<section class="hero-cinematic-stage hero-netflix-stage" id="heroStage" data-delay="5000">
+  
+  <!-- Media Stage: Full-bleed backdrops & seamless background video trailer after 5s -->
+  <div class="hero-media-wrapper" id="heroMediaWrapper">
+    <div class="hero-backdrops-track" id="heroBackdropsTrack">
+      {% for movie in hero_movies %}
+      <div
+        class="hero-backdrop-container {% if loop.first %}active{% endif %}"
+        id="heroBackdrop-{{ loop.index0 }}"
+        style="background-image: url('{{ movie.backdrop_url if movie.backdrop_url else movie.poster_url }}');"
+        data-index="{{ loop.index0 }}"
+        aria-hidden="true"
+      ></div>
+      {% endfor %}
+    </div>
+
+    <!-- YouTube Background Trailer Stage (Muted by default, cross-fades after 5 seconds) -->
+    <div class="hero-video-container" id="heroVideoContainer" aria-hidden="true">
+      <div id="heroYoutubePlayer"></div>
+    </div>
+
+    <!-- Cinematic Vignette & Bottom Blends -->
+    <div class="hero-vignette-layer"></div>
+    <div class="hero-bottom-gradient"></div>
+  </div>
+
+  <!-- Hero Content Slides (Horizontal Slide Track) -->
+  <div class="hero-slides-wrapper" id="heroSlidesWrapper">
+    <div class="hero-slides-track" id="heroSlidesTrack">
+      {% for movie in hero_movies %}
+      <div
+        class="hero-body-container {% if loop.first %}active{% endif %}"
+        id="heroContent-{{ loop.index0 }}"
+        data-index="{{ loop.index0 }}"
+        data-trailer-id="{{ movie.trailer_id }}"
+        data-movie-id="{{ movie.id }}"
+        data-title="{{ movie.title }}"
+        data-backdrop="{{ movie.backdrop_url if movie.backdrop_url else movie.poster_url }}"
+      >
+        <div class="hero-netflix-content">
+          <!-- Authentic Netflix Brand Series Mark -->
+          <div class="hero-brand-series">
+            <span class="brand-n-icon">N</span>
+            <span class="brand-series-label">SERIES</span>
+          </div>
+          
+          <h1 class="hero-netflix-title">{{ movie.title }}</h1>
+
+          <p class="hero-netflix-synopsis">
+            {{ movie.overview[:280] }}{% if movie.overview|length > 280 %}...{% endif %}
+          </p>
+
+          <!-- Authentic Netflix Action Buttons -->
+          <div class="hero-netflix-actions">
+            <button class="btn-netflix-play" id="heroPlayBtn-{{ loop.index0 }}" data-movie-id="{{ movie.id }}" data-trailer-id="{{ movie.trailer_id }}" title="Play Trailer">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+              </svg>
+              <span>Play</span>
+            </button>
+
+            <a href="{{ url_for('movie_details', movie_id=movie.id) }}" class="btn-netflix-info btn-open-modal" data-movie-id="{{ movie.id }}" title="Quick Preview & AI Insights">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <span>More Info</span>
+            </a>
+
+            {% if current_user %}
+              {% if movie.in_watchlist %}
+                <form action="{{ url_for('watchlist_remove', movie_id=movie.id) }}" method="POST" class="inline-form">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn-netflix-circle active" title="Remove from My List">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                  </button>
+                </form>
+              {% else %}
+                <form action="{{ url_for('watchlist_add', movie_id=movie.id) }}" method="POST" class="inline-form">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn-netflix-circle" title="Add to My List">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </button>
+                </form>
+              {% endif %}
+            {% else %}
+              <a href="{{ url_for('login') }}" class="btn-netflix-circle" title="Add to My List">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Screen-Edge Carousel Navigation Arrows (Desktop Netflix Style) -->
+  <button class="hero-screen-arrow hero-arrow-left" id="heroPrevBtn" aria-label="Previous Slide">
+    &#10094;
+  </button>
+  <button class="hero-screen-arrow hero-arrow-right" id="heroNextBtn" aria-label="Next Slide">
+    &#10095;
+  </button>
+
+  <!-- Floating Netflix Right-Side Controls (Audio Toggle & Rating Pill) -->
+  <div class="hero-bottom-right-controls">
+    <button class="hero-audio-btn" id="heroMuteToggle" aria-label="Toggle Sound" title="Sound Muted (Click to Unmute)">
+      <svg class="icon-muted" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+      </svg>
+      <svg class="icon-unmuted" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:none;">
+        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+      </svg>
+    </button>
+    <div class="hero-age-pill">16+</div>
+  </div>
+
+</section>
+{% endif %}
+
+<!-- Scroll-Tied Content Rows Container -->
+<div class="scroll-content-container" id="browse">
+
+  <!-- Macro: Reusable Netflix-Style Movie Row -->
+  {% macro movie_row(section_id, section_title, section_subtitle, movies_list, view_all_url=None) %}
+  {% if movies_list %}
+  <section class="scroll-reveal-section" id="{{ section_id }}">
+    <div class="section-heading-bar">
+      <div class="heading-text">
+        <h2 class="section-title">{{ section_title }}</h2>
+        {% if section_subtitle %}
+          <p class="section-subtitle">{{ section_subtitle }}</p>
+        {% endif %}
+      </div>
+      {% if view_all_url %}
+        <a href="{{ view_all_url }}" class="section-see-all">See All &rarr;</a>
+      {% endif %}
+    </div>
+
+    <div class="carousel-track-wrapper">
+      <button class="carousel-arrow arrow-left" aria-label="Scroll Left" onclick="scrollTrack('{{ section_id }}-track', -600)">
+        &#10094;
+      </button>
+
+      <div class="horizontal-scroll-track" id="{{ section_id }}-track">
+        {% for movie in movies_list %}
+        <article class="cinema-movie-card">
+          <div class="poster-container">
+            <span class="card-brand-badge">N</span>
+            <img
+              src="{{ movie.poster_url }}"
+              alt="{{ movie.title }}"
+              class="card-img"
+              loading="lazy"
+              onerror="this.onerror=null;this.src='/static/img/poster-fallback.svg';"
+            >
+            <div class="card-overlay-hover">
+              <div class="hover-top-row">
+                <span class="hover-match-tag">
+                  {% if movie.match_percentage %}
+                    {{ movie.match_percentage }}% Match
+                  {% elif movie.vote_average %}
+                    ★ {{ "%.1f"|format(movie.vote_average) }}
+                  {% else %}
+                    ★ 8.2
+                  {% endif %}
+                </span>
+                <span class="hover-year">{{ movie.release_date[:4] if movie.release_date else '2024' }}</span>
+              </div>
+              
+              <h4 class="hover-title">{{ movie.title }}</h4>
+
+              {% if movie.genres %}
+                <div class="hover-genres">{{ movie.genres.split(',')[:2]|join(' • ') }}</div>
+              {% endif %}
+
+              <div class="hover-action-row">
+                <a href="{{ url_for('movie_details', movie_id=movie.id) }}" class="btn-card-circle play-circle" title="View Details">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                </a>
+                
+                {% if current_user %}
+                  <form action="{{ url_for('watchlist_add', movie_id=movie.id) }}" method="POST" class="inline-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn-card-circle add-circle" title="Add to Watchlist">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    </button>
+                  </form>
+                {% else %}
+                  <a href="{{ url_for('login') }}" class="btn-card-circle add-circle" title="Sign in to save">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  </a>
+                {% endif %}
+
+                <a href="{{ url_for('recommendations_view', movie_id=movie.id) }}" class="btn-card-circle rec-circle" title="Find Similar">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                </a>
+
+                <button type="button" class="btn-card-circle info-circle btn-open-modal" data-movie-id="{{ movie.id }}" title="Quick Preview & AI Insights">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="card-caption">
+            <h3 class="card-caption-title">{{ movie.title }}</h3>
+            <div class="card-caption-meta">
+              <span class="caption-star">★ {{ "%.1f"|format(movie.vote_average) if movie.vote_average else '7.8' }}</span>
+              <span class="caption-year">{{ movie.release_date[:4] if movie.release_date else '' }}</span>
+            </div>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+
+      <button class="carousel-arrow arrow-right" aria-label="Scroll Right" onclick="scrollTrack('{{ section_id }}-track', 600)">
+        &#10095;
+      </button>
+    </div>
+  </section>
+  {% endif %}
+  {% endmacro %}
+
+  <!-- 1. Trending Now (Directly beneath hero, matching reference UI) -->
+  {{ movie_row(
+      "trending",
+      "Trending Now",
+      "",
+      trending
+  ) }}
+
+  <!-- 1b. Top 10 Movies in India Today (Iconic Netflix India Feature) -->
+  {% if top_10_india %}
+  <section class="scroll-reveal-section top10-section" id="top10-india">
+    <div class="section-heading-bar">
+      <div class="heading-text">
+        <h2 class="section-title"><span class="top10-flag-badge">🇮🇳</span> Top 10 Movies in India Today</h2>
+        <p class="section-subtitle">Ranked by algorithmically weighted streaming popularity and audience engagement</p>
+      </div>
+    </div>
+
+    <div class="carousel-track-wrapper top10-carousel-wrapper">
+      <button class="carousel-arrow arrow-left" aria-label="Scroll Left" onclick="scrollTrack('top10-india-track', -700)">
+        &#10094;
+      </button>
+
+      <div class="horizontal-scroll-track top10-scroll-track" id="top10-india-track">
+        {% for movie in top_10_india %}
+        <article class="top10-card" data-movie-id="{{ movie.id }}">
+          <div class="top10-num-wrap">
+            <svg class="top10-num-svg" viewBox="0 0 100 140">
+              <text x="50%" y="82%" text-anchor="middle" class="top10-stroke-text">{{ loop.index }}</text>
+            </svg>
+          </div>
+          <div class="top10-poster-container cinema-movie-card">
+            <div class="poster-container">
+              <span class="card-brand-badge">N</span>
+              <img
+                src="{{ movie.poster_url }}"
+                alt="{{ movie.title }}"
+                class="card-img"
+                loading="lazy"
+                onerror="this.onerror=null;this.src='/static/img/poster-fallback.svg';"
+              >
+              <div class="card-overlay-hover">
+                <div class="hover-top-row">
+                  <span class="hover-match-tag">★ {{ "%.1f"|format(movie.vote_average or 8.0) }}</span>
+                  <span class="hover-year">{{ movie.release_date[:4] if movie.release_date else '2024' }}</span>
+                </div>
+                <h4 class="hover-title">{{ movie.title }}</h4>
+                <div class="hover-action-row">
+                  <a href="{{ url_for('movie_details', movie_id=movie.id) }}" class="btn-card-circle play-circle" title="View Details">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                  </a>
+                  <button type="button" class="btn-card-circle info-circle btn-open-modal" data-movie-id="{{ movie.id }}" title="Quick Preview & AI Insights">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="card-caption">
+              <h3 class="card-caption-title">{{ movie.title }}</h3>
+            </div>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+
+      <button class="carousel-arrow arrow-right" aria-label="Scroll Right" onclick="scrollTrack('top10-india-track', 700)">
+        &#10095;
+      </button>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- 2. Personalized Recommendations Row (For Authenticated Users) -->
+  {% if current_user and user_recs_data and user_recs_data.recommendations %}
+    {{ movie_row(
+        "rec-for-you",
+        "Recommended For You",
+        user_recs_data.reason,
+        user_recs_data.recommendations,
+        url_for('user_recommendations')
+    ) }}
+  {% endif %}
+
+  <!-- 3. User Watchlist Preview (If user has items) -->
+  {% if current_user and user_watchlist_preview %}
+    {{ movie_row(
+        "my-watchlist-preview",
+        "My Watchlist",
+        "Saved titles waiting on your reel",
+        user_watchlist_preview,
+        url_for('watchlist')
+    ) }}
+  {% endif %}
+
+  <!-- 4. Top Rated Cinema -->
+  {{ movie_row(
+      "top-rated",
+      "Top Rated Cinema",
+      "Critically acclaimed masterpieces with top audience scores",
+      top_rated
+  ) }}
+
+  <!-- 5. Action & High Octane -->
+  {{ movie_row(
+      "action-cinema",
+      "Action & Adventure",
+      "Explosive thrillers, pulse-pounding chases, and epic journeys",
+      action
+  ) }}
+
+  <!-- 6. Sci-Fi & Mind Bending -->
+  {{ movie_row(
+      "scifi-cinema",
+      "Sci-Fi & Speculative Fiction",
+      "Deep space odysseys, dystopian realities, and cerebral futures",
+      scifi
+  ) }}
+
+  <!-- 7. Drama & Human Stories -->
+  {{ movie_row(
+      "drama-cinema",
+      "Captivating Drama",
+      "Emotionally resonant storytelling and poignant performances",
+      drama
+  ) }}
+
+  <!-- 8. Comedy & Lighthearted -->
+  {{ movie_row(
+      "comedy-cinema",
+      "Comedy & Feel-Good",
+      "Witty banter, laugh-out-loud antics, and cheerful romps",
+      comedy
+  ) }}
+
+  <!-- Netflix India Value Proposition: Reasons to Join -->
+  <section class="netflix-value-props-section scroll-reveal-section">
+    <div class="section-heading-bar">
+      <div class="heading-text">
+        <h2 class="section-title">More Reasons to Join MovieFlix</h2>
+        <p class="section-subtitle">Intelligent engineering crafted for cinematic exploration</p>
+      </div>
+    </div>
+    <div class="value-props-grid">
+      <div class="value-prop-card">
+        <h3 class="prop-title">Intelligent AI Recommendations</h3>
+        <p class="prop-desc">Powered by sublinear TF-IDF vectorization and Cosine Similarity, tailored to your unique cinematic tastes.</p>
+        <div class="prop-icon">🧠</div>
+      </div>
+      <div class="value-prop-card">
+        <h3 class="prop-title">Instant HD Trailers</h3>
+        <p class="prop-desc">Stream cinema trailers automatically with our 5-second seamless hero reveal and audio controls.</p>
+        <div class="prop-icon">🎬</div>
+      </div>
+      <div class="value-prop-card">
+        <h3 class="prop-title">Transparent Explainable AI</h3>
+        <p class="prop-desc">Deconstruct why any film was recommended with exact mathematical keyword and genre correlations.</p>
+        <div class="prop-icon">✨</div>
+      </div>
+      <div class="value-prop-card">
+        <h3 class="prop-title">Watchlist & Personalization</h3>
+        <p class="prop-desc">Build your personal queue and rate movies to train your dynamic user preference vector.</p>
+        <div class="prop-icon">⭐</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Netflix India Frequently Asked Questions (Accordion) -->
+  <section class="netflix-faq-section scroll-reveal-section" id="faq">
+    <h2 class="faq-section-title">Frequently Asked Questions</h2>
+    <div class="faq-accordion-list">
+      
+      <div class="faq-item">
+        <button class="faq-question-btn" type="button" aria-expanded="false">
+          <span>What is MovieFlix?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer-panel">
+          <p>MovieFlix is an intelligent movie discovery and recommendation platform built as a data science capstone project. It combines full-bleed Netflix cinematic streaming aesthetics with academic-grade Information Retrieval (IR) algorithms.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question-btn" type="button" aria-expanded="false">
+          <span>How does the AI Recommendation Engine work?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer-panel">
+          <p>MovieFlix converts rich metadata (titles, plot overviews, genres, thematic keywords, directors, and actors) into a 7,500-dimensional TF-IDF vector space. It calculates the Cosine Similarity angle between high-dimensional document vectors to identify nuanced thematic and stylistic alignments in sub-3 milliseconds.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question-btn" type="button" aria-expanded="false">
+          <span>How is Cosine Similarity calculated?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer-panel">
+          <p>Cosine similarity evaluates the inner dot product of two L2-normalized feature vectors: cos(θ) = (u · v) / (||u|| ||v||). This ensures recommendations remain unbiased by document length, focusing purely on semantic orientation.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question-btn" type="button" aria-expanded="false">
+          <span>What tech stack powers this project?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer-panel">
+          <p>The backend is built with Python 3.13 and Flask, backed by MySQL 8 (with automated SQLite fallback). Machine learning models use Scikit-Learn and Scipy sparse CSR matrices. The frontend is vanilla HTML5, CSS3, and JavaScript with zero heavy dependencies.</p>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <button class="faq-question-btn" type="button" aria-expanded="false">
+          <span>Is MovieFlix free to use?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-answer-panel">
+          <p>Yes! MovieFlix is an open academic software engineering showcase. You can create an account, build your Watchlist, rate movies, inspect live AI model diagnostics, and test similarity comparisons completely free.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Email CTA Box -->
+    <div class="faq-email-cta">
+      <p class="cta-prompt-text">Ready to experience intelligent cinema discovery? Enter your email to create your account.</p>
+      <form action="{{ url_for('register') }}" method="GET" class="faq-cta-form">
+        <div class="cta-input-group">
+          <input type="email" name="email" class="cta-email-input" placeholder="Email address" required autocomplete="email">
+          <button type="submit" class="btn btn-primary cta-submit-btn">
+            <span>Get Started</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+</div>
+
+{% endblock %}
